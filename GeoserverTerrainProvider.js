@@ -19,6 +19,9 @@
 	 * @param {Object}
 	 *            [description.heightmapWidth] width and height of a tile in
 	 *            pixels
+	 * @param {Boolean}
+	 *            [description.waterMask] indicates if a water mask will be
+	 *            displayed (experimental)
 	 */
 
 	var WmsParserHelper = function WmsParserHelper(description) {
@@ -110,6 +113,10 @@
 		this.isNewVersion = undefined;
 		this._ready = false;
 		this.levelZeroMaximumGeometricError = undefined;
+		this.waterMask = Cesium.defaultValue(description.waterMask, false);
+		if (typeof (this.waterMask) != "boolean") {
+			this.waterMask = false;
+		}
 
 		// get version
 		var versionNode = xml.querySelector("[version]");
@@ -131,6 +138,20 @@
 					}
 				}
 			}
+			if (Cesium.defined(this.formatArray)
+					&& typeof (this.formatArray.format) === "string"
+					&& typeof (this.formatArray.postProcessArray) === "function") {
+				this.formatArray.terrainDataStructure = {
+					heightScale : 1.0,
+					heightOffset : 0.0,
+					elementsPerHeight : 1,
+					stride : 1,
+					elementMultiplier : 256.0,
+					isBigEndian : false
+				};
+			} else {
+				this.formatArray = undefined;
+			}
 		}
 		if (!Cesium.defined(this.formatArray)) {
 			for (var l = 0; l < WmsParserHelper.FormatImage.length
@@ -141,6 +162,19 @@
 						this.formatImage = WmsParserHelper.FormatImage[l];
 					}
 				}
+			}
+			if (Cesium.defined(this.formatImage)
+					&& typeof (this.formatImage.format) === "string") {
+				this.formatImage.terrainDataStructure = {
+					heightScale : 1.0 / 1000.0,
+					heightOffset : -1000.0,
+					elementsPerHeight : 3,
+					stride : 4,
+					elementMultiplier : 256.0,
+					isBigEndian : true
+				};
+			} else {
+				this.formatImage = undefined;
 			}
 		}
 
@@ -254,34 +288,62 @@
 				var promise = Cesium.throttleRequestByServer(url,
 						Cesium.loadArrayBuffer);
 				if (Cesium.defined(promise)) {
-					resultat = Cesium.when(promise, function(arrayBuffer) {
-						var heightBuffer = that.formatArray.postProcessArray(
-								arrayBuffer, that.heightmapWidth);
-						return new Cesium.HeightmapTerrainData({
-							buffer : heightBuffer,
-							width : that.heightmapWidth,
-							height : that.heightmapWidth,
-							childTileMask : hasChildren,
-							structure : that.formatArray.terrainDataStructure
-						});
-					});
+					resultat = Cesium
+							.when(
+									promise,
+									function(arrayBuffer) {
+										var heightBuffer = that.formatArray
+												.postProcessArray(arrayBuffer,
+														that.heightmapWidth);
+										var waterMask = new Uint8Array(
+												heightBuffer.length);
+										for (var i = 0; i < heightBuffer.length; i++) {
+											if (heightBuffer[i] < 100) {
+												waterMask[i] = 255 - (heightBuffer[i] * 255) / 100;
+											}
+										}
+										return new Cesium.HeightmapTerrainData(
+												{
+													buffer : heightBuffer,
+													width : that.heightmapWidth,
+													height : that.heightmapWidth,
+													childTileMask : hasChildren,
+													waterMask : waterMask,
+													structure : that.formatArray.terrainDataStructure
+												});
+									});
 				}
 
 			} else if (Cesium.defined(this.formatImage)) {
 				// case of image
+				if (level > 6) {
+					return undefined;
+				}
 				var promise2 = Cesium.throttleRequestByServer(url,
 						Cesium.loadImage);
 				if (Cesium.defined(promise2)) {
-					resultat = Cesium.when(promise2, function(image) {
-						var dataPixels = Cesium.getImagePixels(image);
-						return new Cesium.HeightmapTerrainData({
-							buffer : dataPixels,
-							width : that.heightmapWidth,
-							height : that.heightmapWidth,
-							childTileMask : hasChildren,
-							structure : that.formatImage.terrainDataStructure
-						});
-					});
+					resultat = Cesium
+							.when(
+									promise2,
+									function(image) {
+										var dataPixels = Cesium
+												.getImagePixels(image);
+										var waterMask = new Uint8Array(
+												dataPixels.length / 4);
+										for (var i = 0; i < dataPixels.length; i += 4) {
+											if (dataPixels[i] < 512) {
+												waterMask[i / 4] = 255 - (dataPixels[i] * 255) / 512;
+											}
+										}
+										return new Cesium.HeightmapTerrainData(
+												{
+													buffer : dataPixels,
+													width : that.heightmapWidth,
+													height : that.heightmapWidth,
+													childTileMask : hasChildren,
+													structure : that.formatImage.terrainDataStructure
+												});
+									});
 				}
 			}
 		}
@@ -317,45 +379,13 @@
 	 * defined
 	 */
 	WmsParserHelper.FormatImage = [ {
-		format : "image/png",
-		terrainDataStructure : {
-			heightScale : 1.0 / 1000.0,
-			heightOffset : -1000.0,
-			elementsPerHeight : 3,
-			stride : 4,
-			elementMultiplier : 256.0,
-			isBigEndian : true
-		}
+		format : "image/png"
 	}, {
-		format : "image/png; mode=8bit",
-		terrainDataStructure : {
-			heightScale : 1.0 / 1000.0,
-			heightOffset : -1000.0,
-			elementsPerHeight : 3,
-			stride : 4,
-			elementMultiplier : 256.0,
-			isBigEndian : true
-		}
+		format : "image/png; mode=8bit"
 	}, {
-		format : "image/jpeg",
-		terrainDataStructure : {
-			heightScale : 1.0 / 1000.0,
-			heightOffset : -1000.0,
-			elementsPerHeight : 3,
-			stride : 4,
-			elementMultiplier : 256.0,
-			isBigEndian : true
-		}
+		format : "image/jpeg"
 	}, {
-		format : "image/gif",
-		terrainDataStructure : {
-			heightScale : 1.0 / 1000.0,
-			heightOffset : -1000.0,
-			elementsPerHeight : 3,
-			stride : 4,
-			elementMultiplier : 256.0,
-			isBigEndian : true
-		}
+		format : "image/gif"
 	} ];
 	/**
 	 * static array where data array availables for WmsParserHelper are defined
@@ -373,7 +403,7 @@
 				for (var i = 0; i < bufferIn.byteLength; i += 2) {
 					viewerOut.setUint16(i, viewerIn.getUint16(i, false), true);
 					temp = new Uint16Array(viewerOut.buffer, i, 1);
-					if (temp[0] > 10000) {
+					if (temp[0] > 20000) {
 						if (i >= 2) {
 							viewerOut.setUint16(i, viewerOut.getUint16(i - 2,
 									false), false);
@@ -385,14 +415,6 @@
 			}
 			resultat = new Uint16Array(littleEndianBuffer);
 			return resultat;
-		},
-		terrainDataStructure : {
-			heightScale : 1.0,
-			heightOffset : 0.0,
-			elementsPerHeight : 1,
-			stride : 1,
-			elementMultiplier : 256.0,
-			isBigEndian : false
 		}
 	} ];
 
@@ -545,7 +567,7 @@
 	 *          false.
 	 */
 	GeoserverTerrainProvider.prototype.hasWaterMask = function() {
-		return false;
+		return this._wmsParserHelper.waterMask;
 	};
 
 	/**

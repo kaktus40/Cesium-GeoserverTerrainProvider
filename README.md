@@ -30,15 +30,18 @@ After that, the GeoserverTerrainProvider will determine the capabilities of geos
 		var terrainProvider = new Cesium.GeoserverTerrainProvider({
 	        url : "http://localhost:8080/geoserver/elevation/wms",
 	        layerName: "SRTM90",
-	        heightmapWidth:64
+	        heightmapWidth:64,
+	        waterMask:true
 	    });
 	  centralBody.terrainProvider = terrainProvider; 
 	</script>
     </body>
 Where
-- "http://localhost:8080/geoserver/elevation/wms" is the url to go to the wms of "elevation" workspace stored in geoserver;
-- "SRTM90" is the name of the layer in "elevation" workspace
-- "64" is size of terrain cells request by GeoserverTerrainProvider
+- "http://localhost:8080/geoserver/elevation/wms" is the url to go to the wms of "elevation" workspace stored in geoserver (mandatory)
+- "SRTM90" is the name of the layer in "elevation" workspace (mandatory)
+- "64" is size of terrain cells request by GeoserverTerrainProvider (optional)
+- "waterMask" indicates that a water mask will be displayed (optional and experimental)
+
 
 <img src="images/MountEverestWithGeoserver.jpg" width="400" height="300" />
 
