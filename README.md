@@ -40,7 +40,7 @@ Where
 - "SRTM90" is the name of the layer in "elevation" workspace
 - "64" is size of terrain cells request by GeoserverTerrainProvider
 
-<img src="images/MountEverestWithGeoserver.jpg" width="200" height="200" />
+<img src="images/MountEverestWithGeoserver.jpg" width="400" height="300" />
 
 Display created with bing map imagery provider and geoserverTerrainProvider. This last was configured with SRTM map of 90 meters resolution. 
 #Little helps to use SRTM (elevation maps) in geoserver
