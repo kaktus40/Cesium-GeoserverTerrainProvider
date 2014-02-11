@@ -88,7 +88,8 @@
 	 * @param {Object}
 	 *            description can contains these attributs: - heightmapWidth
 	 *            <br>
-	 *            -formatImage
+	 *            -formatImage <br>
+	 *            -tagAltitudeProperty
 	 * @see WmsParserHelper.formatImage for structure<br>
 	 *      -formatArray
 	 * @see WmsParserHelper.formatArray for structure
@@ -114,6 +115,8 @@
 		this._ready = false;
 		this.levelZeroMaximumGeometricError = undefined;
 		this.waterMask = Cesium.defaultValue(description.waterMask, false);
+		this.tagAltitudeProperty = Cesium.defaultValue(
+				description.tagAltitudeProperty, "GRAY_INDEX");
 		if (typeof (this.waterMask) != "boolean") {
 			this.waterMask = false;
 		}
@@ -218,6 +221,62 @@
 	};
 
 	/**
+	 * generate a altitude promise (in meters) of a cartographic point.
+	 */
+	WmsParserHelper.prototype.getHeight = function(urlOfServer, cartographic) {
+		var resultat;
+		if (this._ready && typeof (urlOfServer) === "string"
+				&& cartographic instanceof Cesium.Cartographic) {
+			if ("CRS:84" === this.CRS || "EPSG:4326" === this.CRS) {
+				var rad2deg = 180 / Math.PI;
+				var extentCalcul = new Cesium.Extent();
+				var bbox = "";
+				// 1 minute arc of extent!!
+				extentCalcul.south = cartographic.latitude * rad2deg - 1 / 120;
+				extentCalcul.north = cartographic.latitude * rad2deg + 1 / 120;
+				extentCalcul.west = cartographic.longitude * rad2deg - 1 / 120;
+				extentCalcul.east = cartographic.longitude * rad2deg + 1 / 120;
+				var url = urlOfServer
+						+ '?SERVICE=WMS&REQUEST=GetFeatureInfo&layers='
+						+ this._layerName + '&version=' + this.version
+						+ '&width=60&height=60&x=30&y=30'
+						+ '&INFO_FORMAT=application/vnd.ogc.gml/3.1.1'
+						+ '&QUERY_LAYERS=' + this._layerName;
+
+				if (this.isNewVersion) {
+					// srs become CRS
+					// use firstAxe for bbox
+					var bbox;
+					if (this._firstAxeIsLatitude) {
+						bbox = extentCalcul.south + ',' + extentCalcul.west
+								+ ',' + extentCalcul.north + ','
+								+ extentCalcul.east;
+					} else {
+						bbox = extentCalcul.west + ',' + extentCalcul.south
+								+ ',' + extentCalcul.east + ','
+								+ extentCalcul.north;
+					}
+					url += '&bbox=' + bbox + '&crs=' + this.CRS;
+				} else {
+					var bbox2 = extentCalcul.west + ',' + extentCalcul.south
+							+ ',' + extentCalcul.east + ','
+							+ extentCalcul.north;
+					url += '&bbox=' + bbox2 + '&srs=' + this.CRS;
+				}
+				var that=this;
+				resultat = Cesium.when(Cesium.loadXML(url), function(xml) {
+					var retour;
+					var node = xml.querySelector(that.tagAltitudeProperty);
+					if (node != null) {
+						retour = node.textContent;
+					}
+					return retour;
+				});
+			}
+		}
+		return resultat;
+	}
+	/**
 	 * Requests the geometry for a given tile.
 	 */
 	WmsParserHelper.prototype.getHeightmapTerrainData = function(urlOfServer,
@@ -288,32 +347,25 @@
 				var promise = Cesium.throttleRequestByServer(url,
 						Cesium.loadArrayBuffer);
 				if (Cesium.defined(promise)) {
-					resultat = Cesium
-							.when(
-									promise,
-									function(arrayBuffer) {
-										var heightBuffer = that.formatArray
-												.postProcessArray(arrayBuffer,
-														that.heightmapWidth);
-										var waterMask = new Uint8Array(
-												heightBuffer.length);
-										for (var i = 0; i < heightBuffer.length; i++) {
-											if (heightBuffer[i] < 100) {
-												waterMask[i] = 255 - (heightBuffer[i] * 255) / 100;
-											}
-										}
-										return new Cesium.HeightmapTerrainData(
-												{
-													buffer : heightBuffer,
-													width : that.heightmapWidth,
-													height : that.heightmapWidth,
-													childTileMask : hasChildren,
-													waterMask : waterMask,
-													structure : that.formatArray.terrainDataStructure
-												});
-									});
+					resultat = Cesium.when(promise, function(arrayBuffer) {
+						var heightBuffer = that.formatArray.postProcessArray(
+								arrayBuffer, that.heightmapWidth);
+						var waterMask = new Uint8Array(heightBuffer.length);
+						for (var i = 0; i < heightBuffer.length; i++) {
+							if (heightBuffer[i] == 0) {
+								waterMask[i] = 255;
+							}
+						}
+						return new Cesium.HeightmapTerrainData({
+							buffer : heightBuffer,
+							width : that.heightmapWidth,
+							height : that.heightmapWidth,
+							childTileMask : hasChildren,
+							waterMask : waterMask,
+							structure : that.formatArray.terrainDataStructure
+						});
+					});
 				}
-
 			} else if (Cesium.defined(this.formatImage)) {
 				// case of image
 				if (level > 6) {
@@ -396,22 +448,23 @@
 			var resultat;
 			var viewerIn = new DataView(bufferIn);
 			var littleEndianBuffer = new ArrayBuffer(height * height * 2);
+			var viewerOut = new DataView(littleEndianBuffer);
 			if (littleEndianBuffer.byteLength === bufferIn.byteLength) {
-				var viewerOut = new DataView(littleEndianBuffer);
 				// time to switch bytes!!
-				var temp;
-				for (var i = 0; i < bufferIn.byteLength; i += 2) {
-					viewerOut.setUint16(i, viewerIn.getUint16(i, false), true);
-					temp = new Uint16Array(viewerOut.buffer, i, 1);
-					if (temp[0] > 20000) {
-						if (i >= 2) {
-							viewerOut.setUint16(i, viewerOut.getUint16(i - 2,
-									false), false);
-						} else {
-							viewerOut.setUint16(i, 0, false);
-						}
+				var temp, goodCell = 0, somme = 0;
+				for (var i = 0; i < littleEndianBuffer.byteLength; i += 2) {
+					temp = viewerIn.getUint16(i, false);
+					if (temp < 20000) {
+						viewerOut.setUint16(i, temp, true);
+						somme += temp;
+						goodCell++;
+					} else {
+						var val = (goodCell == 0 ? 1 : somme / goodCell);
+						viewerOut.setUint16(i, val, true);
 					}
 				}
+			} else {
+				viewerOut.setInt16(0, 1);
 			}
 			resultat = new Uint16Array(littleEndianBuffer);
 			return resultat;
@@ -421,6 +474,7 @@
 	Cesium.WmsParserHelper = WmsParserHelper;
 
 	// 1/f=(a-b)/a
+
 	/**
 	 * A {@link TerrainProvider} that produces geometry by tessellating height
 	 * maps retrieved from a geoserver terrain server.
@@ -580,6 +634,17 @@
 	 */
 	GeoserverTerrainProvider.prototype.isReady = function() {
 		return this._wmsParserHelper.isReady();
+	};
+
+	GeoserverTerrainProvider.prototype.getHeight = function(cartographic,
+			callback) {
+		var that = this;
+		if (typeof (callback) === "function") {
+			Cesium.when(that._wmsParserHelper
+					.getHeight(that._url, cartographic), callback);
+		} else {
+			return this._wmsParserHelper.getHeight(that._url, cartographic);
+		}
 	};
 
 	Cesium.GeoserverTerrainProvider = GeoserverTerrainProvider;
