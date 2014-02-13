@@ -4,12 +4,13 @@ cesium-GeoserverTerrainProvider
 GeoserverTerrainProvider: A terrain provider which works with geoserver providing elevation datas in bil, png, gif and jpeg formats. The bil format sholud be favour. 
 
 #Cesium version 
-Tested against b25.
+Tested against b25 and geoserver 2.4.4.
 
 License: Apache 2.0. Free for commercial and non-commercial use. See LICENSE.md.
 
 #Usage
 
+- Optional: import mySLD.xml as a new style in geoserver to render your layer (16 bit grayscale) in other color range.
 - Import the GeoserverTerrainProvider.js file into your html codes after importing Cesium.js.
 - Create a new instance of GeoserverTerrainProvider with url of your geoserver and name of elevation layer.
 - It's possible to get altitude of a cartographic point with getHeight method.
@@ -32,6 +33,8 @@ After that, the GeoserverTerrainProvider will determine the capabilities of geos
 	        url : "http://localhost:8080/geoserver/elevation/wms",
 	        layerName: "SRTM90",
 	        heightmapWidth:64,
+	        styleName:"grayToColor",
+	        tagAltitudeProperty:"GRAY_INDEX",
 	        waterMask:true
 	    });
 	  centralBody.terrainProvider = terrainProvider; 
@@ -51,15 +54,26 @@ After that, the GeoserverTerrainProvider will determine the capabilities of geos
 	</script>
     </body>
 Where
-- "http://localhost:8080/geoserver/elevation/wms" is the url to go to the wms of "elevation" workspace stored in geoserver (mandatory)
+- "http://localhost:8080/geoserver/elevation/wms" is the url to the "elevation" workspace stored in geoserver (mandatory)
 - "SRTM90" is the name of the layer in "elevation" workspace (mandatory)
 - "64" is size of terrain cells request by GeoserverTerrainProvider (optional)
 - "waterMask" indicates that a water mask will be displayed (optional and experimental)
+- "styleName" is the name of mySLD.xml imported style in geoserver (optional see chapter below)
+- "tagAltitudeProperty" is the name of coverage band in geoserver. (optional see chapter below)
 - terrainProvider.getHeight(cartographic, callBack) provides a height promise of a cartographic point. callBack is a function who consumes the promise. 
 
 <img src="images/MountEverestWithGeoserver.jpg" width="400" height="300" />
 
-Display created with bing map imagery provider and geoserverTerrainProvider. This last was configured with SRTM map of 90 meters resolution. 
+Display created with bing map imagery provider and geoserverTerrainProvider. This last was configured with SRTM map of 90 meters resolution.
+
+#More precisions on styleName and tagAltitudeProperty parameters
+- You'll find "tagAltitudeProperty" parameter at the end of layer edit > data
+<img src="images/layerTagAltitude.png" width="400" height="300" />
+- You'll find "styleName" parameter after inserting mySLD.xml as a new style usable for the elevation layer (here it's grayToColor)
+<img src="images/Style.png" width="400" height="300" />
+ 
+The "styleName" parameter is useful when bil plugin can't provide good data...
+ 
 #Little helps to use SRTM (elevation maps) in geoserver
 - you can download SRTM data at http://srtm.csi.cgiar.org/  or http://www.viewfinderpanoramas.org/ (90 meters or 3 seconds arc resolution of map is better)
 - install GDAL tools and python to work with SRTM http://trac.osgeo.org/gdal/wiki/DownloadingGdalBinaries 
