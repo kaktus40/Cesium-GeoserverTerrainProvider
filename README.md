@@ -24,7 +24,7 @@ After that, the GeoserverTerrainProvider will determine the capabilities of geos
     <body>
 	<canvas id="cesiumContainer"></canvas>
 	<script>
-		var canvas = document.getElementById('@conteneurCesium');
+		var canvas = document.getElementById('cesiumContainer');
 		var scene = new Cesium.Scene(canvas);
 		var primitives = scene.getPrimitives();
 		var centralBody = new Cesium.CentralBody(Cesium.Ellipsoid.WGS84);
