@@ -243,13 +243,13 @@
 				&& cartographic instanceof Cesium.Cartographic) {
 			if ("CRS:84" === this.CRS || "EPSG:4326" === this.CRS) {
 				var rad2deg = 180 / Math.PI;
-				var extentCalcul = new Cesium.Extent();
+				var rectangleCalcul = new Cesium.Rectangle();
 				var bbox = "";
 				// 1 minute arc of extent!!
-				extentCalcul.south = cartographic.latitude * rad2deg - 1 / 120;
-				extentCalcul.north = cartographic.latitude * rad2deg + 1 / 120;
-				extentCalcul.west = cartographic.longitude * rad2deg - 1 / 120;
-				extentCalcul.east = cartographic.longitude * rad2deg + 1 / 120;
+				rectangleCalcul.south = cartographic.latitude * rad2deg - 1 / 120;
+				rectangleCalcul.north = cartographic.latitude * rad2deg + 1 / 120;
+				rectangleCalcul.west = cartographic.longitude * rad2deg - 1 / 120;
+				rectangleCalcul.east = cartographic.longitude * rad2deg + 1 / 120;
 				var url = urlOfServer
 						+ '?SERVICE=WMS&REQUEST=GetFeatureInfo&layers='
 						+ this._layerName + '&version=' + this.version
@@ -262,19 +262,19 @@
 					// use firstAxe for bbox
 					var bbox;
 					if (this._firstAxeIsLatitude) {
-						bbox = extentCalcul.south + ',' + extentCalcul.west
-								+ ',' + extentCalcul.north + ','
-								+ extentCalcul.east;
+						bbox = rectangleCalcul.south + ',' + rectangleCalcul.west
+								+ ',' + rectangleCalcul.north + ','
+								+ rectangleCalcul.east;
 					} else {
-						bbox = extentCalcul.west + ',' + extentCalcul.south
-								+ ',' + extentCalcul.east + ','
-								+ extentCalcul.north;
+						bbox = rectangleCalcul.west + ',' + rectangleCalcul.south
+								+ ',' + rectangleCalcul.east + ','
+								+ rectangleCalcul.north;
 					}
 					url += '&bbox=' + bbox + '&crs=' + this.CRS;
 				} else {
-					var bbox2 = extentCalcul.west + ',' + extentCalcul.south
-							+ ',' + extentCalcul.east + ','
-							+ extentCalcul.north;
+					var bbox2 = rectangleCalcul.west + ',' + rectangleCalcul.south
+							+ ',' + rectangleCalcul.east + ','
+							+ rectangleCalcul.north;
 					url += '&bbox=' + bbox2 + '&srs=' + this.CRS;
 				}
 				var that = this;
@@ -300,26 +300,26 @@
 				&& Cesium.defined(x) && Cesium.defined(y)
 				&& Cesium.defined(level)) {
 
-			var extentCalcul = this.tilingScheme.tileXYToNativeExtent(x, y,
+			var rectangleCalcul = this.tilingScheme.tileXYToNativeRectangle(x, y,
 					level);
 			// Each pixel in the heightmap represents the height at the center
 			// of
 			// that
-			// pixel. So expand the Extent by half a sample spacing in each
+			// pixel. So expand the Rectangle by half a sample spacing in each
 			// direction
-			// so that the first height is on the edge of the Extent we need
+			// so that the first height is on the edge of the Rectangle we need
 			// rather
 			// than
-			// half a sample spacing into the Extent.
-			var xSpacing = (extentCalcul.east - extentCalcul.west)
+			// half a sample spacing into the Rectangle.
+			var xSpacing = (rectangleCalcul.east - rectangleCalcul.west)
 					/ (this.heightmapWidth - 1);
-			var ySpacing = (extentCalcul.north - extentCalcul.south)
+			var ySpacing = (rectangleCalcul.north - rectangleCalcul.south)
 					/ (this.heightmapWidth - 1);
 
-			extentCalcul.west -= xSpacing * 0.5;
-			extentCalcul.east += xSpacing * 0.5;
-			extentCalcul.south -= ySpacing * 0.5;
-			extentCalcul.north += ySpacing * 0.5;
+			rectangleCalcul.west -= xSpacing * 0.5;
+			rectangleCalcul.east += xSpacing * 0.5;
+			rectangleCalcul.south -= ySpacing * 0.5;
+			rectangleCalcul.north += ySpacing * 0.5;
 
 			var url = urlOfServer + '?SERVICE=WMS&REQUEST=GetMap&layers='
 					+ this._layerName + '&version=' + this.version + '&width='
@@ -330,16 +330,16 @@
 				// use firstAxe for bbox
 				var bbox;
 				if (this._firstAxeIsLatitude) {
-					bbox = extentCalcul.south + ',' + extentCalcul.west + ','
-							+ extentCalcul.north + ',' + extentCalcul.east;
+					bbox = rectangleCalcul.south + ',' + rectangleCalcul.west + ','
+							+ rectangleCalcul.north + ',' + rectangleCalcul.east;
 				} else {
-					bbox = extentCalcul.west + ',' + extentCalcul.south + ','
-							+ extentCalcul.east + ',' + extentCalcul.north;
+					bbox = rectangleCalcul.west + ',' + rectangleCalcul.south + ','
+							+ rectangleCalcul.east + ',' + rectangleCalcul.north;
 				}
 				url += '&bbox=' + bbox + '&crs=' + this.CRS;
 			} else {
-				var bbox2 = extentCalcul.west + ',' + extentCalcul.south + ','
-						+ extentCalcul.east + ',' + extentCalcul.north;
+				var bbox2 = rectangleCalcul.west + ',' + rectangleCalcul.south + ','
+						+ rectangleCalcul.east + ',' + rectangleCalcul.north;
 				url += '&bbox=' + bbox2 + '&srs=' + this.CRS;
 			}
 

@@ -4,7 +4,7 @@ cesium-GeoserverTerrainProvider
 GeoserverTerrainProvider: A terrain provider which works with geoserver providing elevation datas in bil, png, gif and jpeg formats. The bil format sholud be favour. 
 
 #Cesium version 
-Tested against b26 and geoserver 2.4.4.
+Tested against b28 and geoserver 2.5.0.
 
 License: Apache 2.0. Free for commercial and non-commercial use. See LICENSE.md.
 
@@ -26,9 +26,10 @@ After that, the GeoserverTerrainProvider will determine the capabilities of geos
 	<script>
 		var canvas = document.getElementById('cesiumContainer');
 		var scene = new Cesium.Scene(canvas);
-		var primitives = scene.getPrimitives();
-		var centralBody = new Cesium.CentralBody(Cesium.Ellipsoid.WGS84);
-		primitives.setCentralBody(centralBody);
+		var primitives = scene.primitives;
+		var globe = new Cesium.Globe(Cesium.Ellipsoid.WGS84);
+		scene.globe=globe;
+		
 		var terrainProvider = new Cesium.GeoserverTerrainProvider({
 	        url : "http://localhost:8080/geoserver/elevation/wms",
 	        layerName: "SRTM90",
@@ -37,9 +38,10 @@ After that, the GeoserverTerrainProvider will determine the capabilities of geos
 	        tagAltitudeProperty:"GRAY_INDEX",
 	        waterMask:true
 	    });
-	  centralBody.terrainProvider = terrainProvider; 
-	  var hand = new Cesium.ScreenSpaceEventHandler(canvas);
-      hand.setInputAction(
+	  	globe.terrainProvider = terrainProvider; 
+	  	var hand = new Cesium.ScreenSpaceEventHandler(canvas);
+	  	// return altitude with double click in console.log!!
+      	hand.setInputAction(
     	            function (movement) {
     	            	if(movement.position != null) {
     	                    var cartesian = scene.getCamera().controller.pickEllipsoid(movement.position, ellipsoid);
