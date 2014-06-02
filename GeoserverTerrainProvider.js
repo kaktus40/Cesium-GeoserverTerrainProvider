@@ -424,7 +424,7 @@
 																		// to
 																		// color
 																		// #00BA98
-																		var valeur = (dataPixels[i + 1] << 8 | dataPixels[2]) - 32768;
+																		var valeur = (dataPixels[i + 1] << 8 | dataPixels[i+2]) - 32768;
 																		// lower
 																		// point
 																		// of
