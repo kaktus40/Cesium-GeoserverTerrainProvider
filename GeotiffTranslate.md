@@ -8,7 +8,7 @@ You can find the source code of GeotiffTranslate (1 file) [here](GeotiffTranslat
 * Use the command line 
 ```
 java -jar GeotiffTranslate.jar -i inputDirectory -o outputDirectory -s offset -delete -deflate
-
+```
 
 where:
   * inputDirectory (mandatory) is a directory which contains tif images to convert(extension tif or tiff)
