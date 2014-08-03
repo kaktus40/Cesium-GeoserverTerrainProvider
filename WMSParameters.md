@@ -64,7 +64,7 @@ For the example the workspace in geoserver is "**elevation**", the layer name is
   <th>comments</th>
 </tr>
 <tr>
-  <td>*service*</td>
+  <td><i>service</i></td>
   <td>NO</td>
   <td>String</td>
   <td>"WMS"</td>
@@ -73,43 +73,43 @@ For the example the workspace in geoserver is "**elevation**", the layer name is
   <td>indicates type of service</td>
 </tr>
 <tr>
-  <td>**layerName**</td>
+  <td><b>layerName</b></td>
   <td>YES</td>
   <td>String</td>
-  <td>*undefined*</td>
+  <td><i>undefined</i></td>
   <td>"SRTM90"</td>
   <td>"elevation:SRTM90"</td>
   <td>name of the layer to use</td>
 </tr>
 <tr>
-  <td>**url**</td>
+  <td><b>url</b></td>
   <td>NO (see comments)</td>
   <td>String</td>
-  <td>*undefined*</td>
+  <td><i>undefined</i></td>
   <td>"geoURL/elevation/wms"</td>
   <td>"geoURL/gwc/service/wms"</td>
-  <td>URL to acces to getCapabilities document (and ressources of the layer!!).** Either xml (see below) and url must be defined**</td>
+  <td>URL to acces to getCapabilities document (and ressources of the layer!!).<b> Either xml (see below) and url must be defined</b></td>
 </tr>
 <tr>
-  <td>**xml**</td>
+  <td><b>xml</b></td>
   <td>NO (see comments)</td>
   <td>XMLDocument</td>
-  <td>*undefined*</td>
-  <td>XMLDocument of *geoURL/elevation/wms?SERVICE=WMS&REQUEST=GetCapabilities&tiled=true*</td>
-  <td>XMLDocument of *geoURL/gwc/service/wms?SERVICE=WMS&REQUEST=GetCapabilities&tiled=true*</td>
-  <td>xml that defines the metadata of the layer. **Either url (see above) and xml must be defined**</td>
+  <td><i>undefined</i></td>
+  <td>XMLDocument of <i>geoURL/elevation/wms?SERVICE=WMS&REQUEST=GetCapabilities&tiled=true</i></td>
+  <td>XMLDocument of <i>geoURL/gwc/service/wms?SERVICE=WMS&REQUEST=GetCapabilities&tiled=true</i></td>
+  <td>xml that defines the metadata of the layer. <b>Either url (see above) and xml must be defined</b></td>
 </tr>
 <tr>
-  <td>*proxy*</td>
+  <td><i>proxy</i></td>
   <td>NO</td>
   <td>Cesium.DefaultProxy</td>
-  <td>*undefined*</td>
+  <td><i>undefined</i></td>
   <td>new Cesium.DefaultProxy(urlProxy)</td>
   <td>new Cesium.DefaultProxy(urlProxy)</td>
   <td>a proxy to get data from geoserver</td>
 </tr>
 <tr>
-  <td>*heightMapWidth*</td>
+  <td><i>heightMapWidth<i></td>
   <td>NO</td>
   <td>Integer</td>
   <td>65</td>
@@ -118,7 +118,7 @@ For the example the workspace in geoserver is "**elevation**", the layer name is
   <td>defines size of squared tile. It seems that Cesium can't work with tile bigger than a certain size (between 129 and 256).</td>
 </tr>
 <tr>
-  <td>*offset*</td>
+  <td><i>offset</i></td>
   <td>NO</td>
   <td>Number</td>
   <td>0</td>
@@ -127,7 +127,7 @@ For the example the workspace in geoserver is "**elevation**", the layer name is
   <td>offset of the data in meters. It's positive to decrease the altitude of data received and it's negative to increase the altitude of data received</td>
 </tr>
 <tr>
-  <td>*highest*</td>
+  <td><i>highest</i></td>
   <td>NO</td>
   <td>Number</td>
   <td>12000</td>
@@ -136,7 +136,7 @@ For the example the workspace in geoserver is "**elevation**", the layer name is
   <td>define highest altitude of the layer. If an elevation data is higher, it will be balanced with data of the same sample.</td>
 </tr>
 <tr>
-  <td>*lowest*</td>
+  <td><i>lowest</i></td>
   <td>NO</td>
   <td>Number</td>
   <td>-500</td>
@@ -145,16 +145,16 @@ For the example the workspace in geoserver is "**elevation**", the layer name is
   <td>define lowest altitude of the layer. If an elevation data is lower, it will be balanced with data of the same sample.</td>
 </tr>
 <tr>
-  <td>**styleName**</td>
+  <td><b>styleName</b></td>
   <td>NO</td>
   <td>String</td>
-  <td>*undefined*</td>
+  <td><i>undefined</i></td>
   <td>"mySLD"</td>
   <td>"mySLD"</td>
-  <td>Name of style to use for GeoserverTerrainProvider when it works with BILL/DDS or styled images (**required in both case**). **In case of converted images, this parameter must be undefined or parameter hasStyledImage must be false (see below)**</td>
+  <td>Name of style to use for GeoserverTerrainProvider when it works with BILL/DDS or styled images (<b>required in both case</b>). <b>In case of converted images, this parameter must be undefined or parameter hasStyledImage must be false (see below)</b></td>
 </tr>
 <tr>
-  <td>*hasStyledImage*</td>
+  <td><i>hasStyledImage</i></td>
   <td>NO</td>
   <td>Boolean</td>
   <td>true if styleName is defined, otherwise it's false</td>
@@ -163,7 +163,7 @@ For the example the workspace in geoserver is "**elevation**", the layer name is
   <td>indicates if image type is styled or converted. see comments of styleName parameter above</td>
 </tr>
 <tr>
-  <td>*waterMask*</td>
+  <td><i>waterMask</i></td>
   <td>NO</td>
   <td>Boolean</td>
   <td>false</td>
@@ -172,7 +172,7 @@ For the example the workspace in geoserver is "**elevation**", the layer name is
   <td>Experimental. Indicates if GeoserverTerrainProvider should generate a water mask</td>
 </tr>
 <tr>
-  <td>*maxLevel*</td>
+  <td><i>maxLevel</i></td>
   <td>NO</td>
   <td>Integer</td>
   <td>11</td>
@@ -181,21 +181,21 @@ For the example the workspace in geoserver is "**elevation**", the layer name is
   <td>Level maximum to request for the layer. For indication, with a 90 meters (or 3 seconds arc) precision data, level 11 is enough; with a 30 meters (or 1 second arc) precision data, level 13 should be enough. </td>
 </tr>
 <tr>
-  <td>**formatImage**</td>
+  <td><b>formatImage</b></td>
   <td>NO</td>
   <td>Object with members:<ul><li>format: mime of the image</li><li>extension: extension of the image</li></ul></td>
-  <td>*undefined*</td>
+  <td><i>undefined</i></td>
   <td>{format : "image/jpeg",extension: "jpg"}</td>
   <td>{format : "image/png",extension: "png"}</td>
-  <td>indicates the type of image to use. **If BIL/DDS was added to geoserver, in order to use converted images instead of BILL/DDS, this parameter must be defined**. To use styled images without BILL/DDS, formatImage must be defined,and either hasStyledImage is defined to true or styleName must be defined. **If BIL/DDS plugin is not inserted in geoserver, GeoserverTerrainProvider will use available image format**</td>
+  <td>indicates the type of image to use. <b>If BIL/DDS was added to geoserver, in order to use converted images instead of BILL/DDS, this parameter must be defined</b>. To use styled images without BILL/DDS, formatImage must be defined,and either hasStyledImage is defined to true or styleName must be defined. <b>If BIL/DDS plugin is not inserted in geoserver, GeoserverTerrainProvider will use available image format</b></td>
 </tr>
 <tr>
-  <td>*formatArray*</td>
+  <td><i>formatArray</i></td>
   <td>NO</td>
   <td>Object with members:<ul><li>format: mime of the data</li><li>postProcessArray: a function to process received arrayData</li></ul></td>
-  <td>*undefined*</td>
-  <td>*see example*</td>
-  <td>*see example*</td>
-  <td>Format array to use instead of default format array. This format is defined only if BIL/DDS is available in geoserver (*image/bil* MIME). If formatImage is an undefined parameter and *image/bil* MIME is available, GeoserverTerrain provider will use the default formatArray.</td>
+  <td><i>undefined</i></td>
+  <td><i>see example</i></td>
+  <td><i>see example</i></td>
+  <td>Format array to use instead of default format array. This format is defined only if BIL/DDS is available in geoserver (<i>image/bil</i> MIME). If formatImage is an undefined parameter and <i>image/bil</i> MIME is available, GeoserverTerrain provider will use the default formatArray.</td>
 </tr>
 </table> 
