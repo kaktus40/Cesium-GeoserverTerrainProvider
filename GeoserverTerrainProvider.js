@@ -19,7 +19,7 @@
 		var heightBuffer = formatArray.postProcessArray(arrayBuffer,size,limitations.highest,limitations.lowest,
 			limitations.offset);
 		if (!Cesium.defined(heightBuffer)) {
-			throw "no good size";
+			throw new Cesium.DeveloperError("no good size");
 		}
 		var optionsHeihtmapTerrainData={
 			buffer : heightBuffer,
@@ -112,6 +112,11 @@
 		ellipsoid : Cesium.Ellipsoid.WGS84,
 		firstAxeIsLatitude : false,
 		tilingScheme : Cesium.WebMercatorTilingScheme
+	}, {
+		name : "OSGEO:41001",
+		ellipsoid : Cesium.Ellipsoid.WGS84,
+		firstAxeIsLatitude : false,
+		tilingScheme : Cesium.WebMercatorTilingScheme
 	} ];
 
 	/**
@@ -172,7 +177,7 @@
 		}
 	} ];
 
-	OGCHelper.service=[{ name: "WMS",implementation: wmsParser}];
+	OGCHelper.service=[{ name: "WMS",implementation: wmsParser},{ name: "TMS",implementation: tmsParser}];
 
 	/**
 	 * parse wms url from an url and a layer. request metadata information.
@@ -234,7 +239,7 @@
 			this.getMetaDatafromXML(description.xml, description);
 		}else{
 			throw new Cesium.DeveloperError(
-					'description.url or  description.xml are required.');
+					'either description.url or description.xml are required.');
 		}
 	};
 
@@ -408,27 +413,9 @@
 				if (nodeBBox !== null) {
 					this.CRS = referentialName;
 					this._firstAxeIsLatitude = CRSSelected.firstAxeIsLatitude;
-					var west,south,east,north;
-					if(this.isNewVersion && this._firstAxeIsLatitude ){
-						south=parseFloat(nodeBBox.getAttribute("minx"));
-						west=parseFloat(nodeBBox.getAttribute("miny"));
-						north=parseFloat(nodeBBox.getAttribute("maxx"));
-						east=parseFloat(nodeBBox.getAttribute("maxy"));
-					}else{
-						west=parseFloat(nodeBBox.getAttribute("minx"));
-						south=parseFloat(nodeBBox.getAttribute("miny"));
-						east=parseFloat(nodeBBox.getAttribute("maxx"));
-						north=parseFloat(nodeBBox.getAttribute("maxy"));
-					}
-					var rectangle=new Cesium.Rectangle(west*Math.PI/180,south*Math.PI/180,east*Math.PI/180,north*Math.PI/180);
-					var rectangleSouthwestInMeters=new Cesium.Cartesian2(west,south);
-					var rectangleNortheastInMeters=new Cesium.Cartesian2(east,north);
 					this.tilingScheme = new CRSSelected.tilingScheme({
-						ellipsoid : CRSSelected.ellipsoid,
-						rectangleSouthwestInMeters: rectangleSouthwestInMeters,
-						rectangleNortheastInMeters: rectangleNortheastInMeters,
-						rectangle: rectangle
-					});
+						ellipsoid : CRSSelected.ellipsoid
+						});
 					found = true;
 				}
 			}
@@ -587,6 +574,223 @@
 		}
 		return resultat;
 	};
+
+	/**
+	 * parse tms url from an url and a layer.
+	 * 
+	 * @alias tmsParser
+	 * @constructor
+	 * 
+	 * @param {String}
+	 *            [description.layerName] the name of the layer.
+	 * @param {String}
+	 *            [description.url] The URL of the TileMapService resource or of the TileMap Resource.
+	 * @param {String}
+	 *            [description.xml] the xml of the TileMapService resource or of the TileMap Resource.
+	 * @param {Object}
+	 *            [description.proxy] A proxy to use for requests. This object
+	 *            is expected to have a getURL function which returns the
+	 *            proxied URL, if needed.
+	 * @param {Number}
+	 *            [description.heightMapWidth] width and height of a tile in
+	 *            pixels
+	 * @param {Number}
+	 *            [description.offset] offset of the tiles (in meters)
+	 * @param {Number}
+	 *            [description.highest] highest altitude in the tiles (in meters)
+	 * @param {Number}
+	 *            [description.lowest] lowest altitude in the tiles (in meters)
+	 * @param {boolean}
+	 *            [description.hasStyledImage] indicates if the requested images are styled with SLD
+	 * @param {Boolean}
+	 *            [description.waterMask] indicates if a water mask will be
+	 *            displayed (experimental)
+	 * @param {Number}
+	 *            [description.maxLevel] maximum level to request
+	 */
+	function tmsParser(description){
+		description = Cesium.defaultValue(description,
+				Cesium.defaultValue.EMPTY_OBJECT);
+		this._layerName = description.layerName;
+		this._ready = false;
+		this.heightMapWidth = Cesium.defaultValue(description.heightMapWidth,65);
+		this.maxLevel = Cesium.defaultValue(description.maxLevel, 11);
+		this._ready=false;
+		this._proxy=description.proxy;
+		this.hasStyledImage=Cesium.defaultValue(description.hasStyledImage,false);
+		if (typeof (this.hasStyledImage) != "boolean") {
+			throw new Cesium.DeveloperError("hasStyledImage must be defined as a boolean");
+		}
+		this.waterMask=Cesium.defaultValue(description.waterMask, false);
+		if (typeof (this.waterMask) != "boolean") {
+			this.waterMask = false;
+		}
+		this.offset=Cesium.defaultValue(description.offset,0);
+		this.highest=Cesium.defaultValue(description.highest,12000);
+		this.lowest=Cesium.defaultValue(description.lowest,-500);
+
+		var that=this;
+		if (Cesium.defined(description.url)) {
+			Cesium.loadXML(description.url).then(function(xml){that.parseXML(xml);});
+		} else if (Cesium.defined(description.xml)) {
+			that.parseXML(description.xml);
+		}else{
+			throw new Cesium.DeveloperError(
+					'either description.url or description.xml are required.');
+		}
+	};
+	
+	tmsParser.prototype.parseXML = function(xml){
+		var that=this;
+		if (!(xml instanceof XMLDocument)) {
+			throw new Cesium.DeveloperError('xml must be a XMLDocument');
+		}
+		if(tmsParser.isTileMapService(xml)){
+			if (!Cesium.defined(that._layerName)) {
+				throw new Cesium.DeveloperError('layerName is required.');
+			}
+			var promise=tmsParser.tileMapServiceParser(xml,that._layerName,that._proxy);
+			promise.then(function(tabResult){
+				var resultat;
+				var found=false;
+				for(var i=0;i<tabResult.length&&!found;i++){
+					if(Cesium.defined(tabResult[i])){
+						resultat=tabResult[i];
+						found=true;
+					}
+				}
+				if(found){
+					for(key in resultat){
+						that[key]=resultat[key];
+					}
+					that._ready=true;
+				}
+			});
+		}else{
+			var resultat=tmsParser.tileMapParser(xml);
+			for(key in resultat){
+				that[key]=resultat[key];
+			}
+			that._ready=true;
+		}
+	};
+
+	/**
+	 * Requests the geometry for a given tile.
+	 */
+	tmsParser.prototype.getHeightmapTerrainData = function(x, y, level) {
+		var resultat;
+		if (this._ready && Cesium.defined(x) && Cesium.defined(y) && Cesium.defined(level)) {
+	        if(level<this.tileSets.length){
+				var yTiles = this.tilingScheme.getNumberOfYTilesAtLevel(level);
+		        var tmsY = (yTiles - y - 1);
+		        var url;
+	        	url=this.tileSets[level].url;
+	        	url+="/"+x+"/"+tmsY+"."+this.formatImage.extension;
+		    	if(Cesium.defined(this._proxy)){
+					url=this._proxy.getURL(url);
+				}
+				var that = this;
+				var hasChildren = that.maxLevel > level ? 15 : 0;
+				var limitations={highest:this.highest,lowest:this.lowest,offset:this.offset};
+
+				if (that.hasStyledImage) {
+					limitations.offset=limitations.offset+32768;
+				}
+				
+				var promise = Cesium.throttleRequestByServer(url,Cesium.loadImage);
+				if (Cesium.defined(promise)) {
+					resultat = Cesium.when(promise,function(image){
+								return OGCHelper.processImage(image,limitations,
+									that.heightMapWidth,that.waterMask,hasChildren);
+							});}
+	    	}
+		}
+		return resultat;
+	};
+
+	tmsParser.isTileMapService=function(xml){
+		return xml.querySelector("TileMapService")!=null;
+	};
+
+	tmsParser.tileMapParser=function(xml){
+		var resultat={};
+		var srs=xml.querySelector("SRS").textContent;
+		var found = false;
+		for (var n = 0; n < OGCHelper.CRS.length && !found; n++) {
+			if(OGCHelper.CRS[n].name===srs){
+				var CRSSelected = OGCHelper.CRS[n];
+				var nodeBBox = xml.querySelector("BoundingBox");
+				if (nodeBBox != null) {
+					var west,south,east,north;
+					west=parseFloat(nodeBBox.getAttribute("minx"));
+					south=parseFloat(nodeBBox.getAttribute("miny"));
+					east=parseFloat(nodeBBox.getAttribute("maxx"));
+					north=parseFloat(nodeBBox.getAttribute("maxy"));
+					var rectangle=new Cesium.Rectangle(west*Math.PI/180,south*Math.PI/180,east*Math.PI/180,north*Math.PI/180);
+					var rectangleSouthwestInMeters=new Cesium.Cartesian2(west,south);
+					var rectangleNortheastInMeters=new Cesium.Cartesian2(east,north);
+
+					resultat.tilingScheme = new CRSSelected.tilingScheme({
+						ellipsoid : CRSSelected.ellipsoid,
+						rectangleSouthwestInMeters: rectangleSouthwestInMeters,
+						rectangleNortheastInMeters: rectangleNortheastInMeters,
+						rectangle: rectangle
+					});
+					found = true;
+				}
+			}
+		}
+
+		found=false;
+		var format=xml.querySelector("TileFormat");
+		for (var l = 0; l < OGCHelper.FormatImage.length && !found; l++) {
+			if (OGCHelper.FormatImage[l].extension==format.getAttribute("extension")) {
+				resultat.formatImage = OGCHelper.FormatImage[l];
+				resultat.size={};
+				resultat.size.width=parseInt(format.getAttribute("width"));
+				resultat.size.height=parseInt(format.getAttribute("height"));
+				found=true;
+			}
+		}
+
+		var tilsetsNode=xml.querySelectorAll("TileSets>TileSet");
+		var tabTileSet=[];
+		for (var h=0;h<tilsetsNode.length;h++){
+			var tileSet=tilsetsNode[h];
+			var url=tileSet.getAttribute("href");
+			var level=parseInt(tileSet.getAttribute("order"));
+			tabTileSet.push({url:url,level:level});
+		}
+		tabTileSet.sort(function(a,b){
+			return a.level-b.level;
+		});
+		if(tabTileSet.length>0){
+			resultat.tileSets=tabTileSet;
+		}
+
+		if(!Cesium.defined(resultat.tileSets)||!Cesium.defined(resultat.formatImage)||isNaN(resultat.size.width)
+			||isNaN(resultat.size.height)||!Cesium.defined(resultat.tilingScheme)){
+			 resultat=undefined;
+		}
+		return resultat;
+	};
+
+	tmsParser.tileMapServiceParser = function(xml,title,proxy){
+		var mapServiceNodes=xml.querySelectorAll("TileMap[title='"+title+"']");
+		var promises=[];
+		for(var i=0;i<mapServiceNodes.length;i++){
+			var url=mapServiceNodes[i].getAttribute("href");
+			if(Cesium.defined(proxy)){
+				url=proxy.getURL(url);
+			}
+			promises.push(Cesium.when(Cesium.loadXML(url),function(xml){
+				return tmsParser.tileMapParser(xml);
+			}));
+		}
+		return Cesium.when.all(promises);
+	};
+
 
 
 

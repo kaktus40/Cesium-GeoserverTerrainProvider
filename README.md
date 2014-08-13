@@ -90,6 +90,7 @@ It's a 8 bits red green blue geotiff format that geoserver serves as an image wh
 <img src="images/SRTM90Converted.png" width="600" height="400" />
 
 ##In nutshell
+
 <table style="align:left;" border="1">
 <tr style="center;">
   <th>  </th>
@@ -113,16 +114,16 @@ It's a 8 bits red green blue geotiff format that geoserver serves as an image wh
   <td>CONS</td>
   <td><ul><li>need to insert BILL/DDS plug in in geoserver library</li><li>BILL/DDS seems to be buggy for certain coordinates also in this case and to compensate, GeoserverTerrainProvider request, in image format, the same data (which could be long to process for styled images)</li></ul></td>
   <td><ul><li>can be slow to process for geoserver if not precached with GeoWebCache</li><li>precaching styled images can take a very long time</li></ul></td>
-  <td><ul><li>need to convert original geotiff with GeotiffTranslate (see <a href="GeotiffTranslate.md">here</a></li></ul></td>
+  <td><ul><li>need to convert original geotiff with GeotiffTranslate (see <a href="GeotiffTranslate.md">here</a>)</li></ul></td>
 </tr>
 </table> 
 
 #Which service ?
 GeoserverTerrainProvider can use:
 
- - Web Map Service (version 1.1.1 and version 1.3.0) more details [here](WMSParameters.md)
- - *coming soon* Tile Map Service
- - *coming soon* Web Map Tile Service 
+ - Web Map Service provided by geoserver or geoWebCache(version 1.1.1 and version 1.3.0) more details [here](WMSParameters.md)
+ - *coming soon* Tile Map Service provided by geoWebCache
+ - *coming soon* Web Map Tile Service provided by geoWebCache
 
 #Little helps to use SRTM (elevation maps) in geoserver
 - you can download SRTM data at http://srtm.csi.cgiar.org/  or http://www.viewfinderpanoramas.org/ (90 meters or 3 seconds arc resolution of map is better)
