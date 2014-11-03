@@ -4,7 +4,7 @@ cesium-GeoserverTerrainProvider
 GeoserverTerrainProvider: A terrain provider which works with geoserver providing elevation datas in bil, png, gif and jpeg formats. The png format should be prefered. 
 
 #Cesium version 
-Tested with Cesium 1.0 and geoserver 2.5.0.
+Tested with Cesium 1.3 and geoserver 2.5.0.
 
 License: Apache 2.0. Free for commercial and non-commercial use. See LICENSE.md.
 
@@ -32,7 +32,6 @@ After that, the GeoserverTerrainProvider will determine the capabilities of geos
 		var terrainProvider = new Cesium.GeoserverTerrainProvider({
 	        url : "http://localhost:8080/geoserver/elevation/wms",
 	        layerName: "SRTM90",
-	        heightmapWidth:64,
 	        styleName:"grayToColor",
 	        waterMask:true
 	    });
@@ -57,7 +56,6 @@ Where
 <ul>
 	<li>"http://localhost:8080/geoserver/elevation/wms" is the url to the "elevation" workspace stored in geoserver (mandatory)	</li>
 	<li>"SRTM90" is the name of the layer in "elevation" workspace (mandatory)	</li>
-	<li>"64" is size of terrain cells request by GeoserverTerrainProvider (optional)	</li>
 	<li>"waterMask" indicates that a water mask will be displayed (optional and experimental)	</li>
 	<li>"styleName" is the name of mySLD.xml imported style in geoserver (optional see chapter below)	</li>
 </ul>
@@ -102,7 +100,7 @@ It's a 8 bits red green blue geotiff format that geoserver serves as an image wh
   <td>HOW TO</td>
   <td>insert BIL/DDS plugin into geoserver library</td>
   <td>insert mySLD.xml into the list of styles in geoserver</td>
-  <td>use GeotiffTranslate in order to convert your 16 bit grayscale geotiff into 8 bits RGB color geotiff. The converted geotiff must be inserted in a workspace of geoserver</td>
+  <td>use GeotiffTranslate in order to convert your 16 bit grayscale geotiffs into 8 bits RGB color geotiff. The converted geotiffs must be inserted in a workspace of geoserver</td>
 </tr>
 <tr>
   <td>PROS</td>
@@ -114,16 +112,16 @@ It's a 8 bits red green blue geotiff format that geoserver serves as an image wh
   <td>CONS</td>
   <td><ul><li>need to insert BILL/DDS plug in in geoserver library</li><li>BILL/DDS seems to be buggy for certain coordinates also in this case and to compensate, GeoserverTerrainProvider request, in image format, the same data (which could be long to process for styled images)</li></ul></td>
   <td><ul><li>can be slow to process for geoserver if not precached with GeoWebCache</li><li>precaching styled images can take a very long time</li></ul></td>
-  <td><ul><li>need to convert original geotiff with GeotiffTranslate (see <a href="GeotiffTranslate.md">here</a>)</li></ul></td>
+  <td><ul><li>need to convert original geotiff with GeotiffTranslate (see <a href="GeotiffTranslate.md">here</a>)</li><li>loss of precision, some terrains have breaches...</li></ul></td>
 </tr>
 </table> 
 
 #Which service ?
 GeoserverTerrainProvider can use:
 
- - Web Map Service provided by geoserver or geoWebCache(version 1.1.1 and version 1.3.0) more details [here](WMSParameters.md)
- - *coming soon* Tile Map Service provided by geoWebCache
- - *coming soon* Web Map Tile Service provided by geoWebCache
+ - Web Map Service provided by geoserver or geoWebCache (version 1.1.1 and version 1.3.0) more details [here](WMSParameters.md)
+ - Tile Map Service provided by geoWebCache (version 1.0) [here](TMSParameters.md)
+ - Web Map Tile Service provided by geoWebCache (version 1.0) [here](WMTSParameters.md)
 
 #Little helps to use SRTM (elevation maps) in geoserver
 - you can download SRTM data at http://srtm.csi.cgiar.org/  or http://www.viewfinderpanoramas.org/ (90 meters or 3 seconds arc resolution of map is better)

@@ -7,6 +7,7 @@ var terrainProvider = new Cesium.GeoserverTerrainProvider({
 	        xml: xmlGetCapabilities,
 	        proxy: proxy,
 	        heightMapWidth: 64,
+          heightMapHeight: 64,
 	        offset: 0,
 	        highest: 12000,
 	        lowest: -500,
@@ -52,7 +53,7 @@ var terrainProvider = new Cesium.GeoserverTerrainProvider({
 ```
 	    
 #Details
-For the example the workspace in geoserver is "**elevation**", the layer name is "**SRTM90**", the url of geoserver is "**geoURL**" and the name of style is "**mySLD**".
+For the example the workspace in geoserver is "**elevation**", the layer name is "**SRTM90**", the url of geoserver is "**geoURL**" and the name of style is "**grayToColor**".
 <table style="align:left;" border="1">
 <tr style="center;">
   <th>parameter</th>
@@ -114,8 +115,15 @@ For the example the workspace in geoserver is "**elevation**", the layer name is
   <td>Integer</td>
   <td>65</td>
   <td>128</td>
+  <td>defines width of tile. It seems that Cesium can't work with tile bigger than a certain size (between 129 and 256).</td>
+</tr>
+<tr>
+  <td><i>heightMapHeight<i></td>
+  <td>NO</td>
+  <td>Integer</td>
+  <td>65</td>
   <td>128</td>
-  <td>defines size of squared tile. It seems that Cesium can't work with tile bigger than a certain size (between 129 and 256).</td>
+  <td>defines height tile. It seems that Cesium can't work with tile bigger than a certain size (between 129 and 256).</td>
 </tr>
 <tr>
   <td><i>offset</i></td>
