@@ -37,9 +37,6 @@
 		format : "image/png",
 		extension: "png"
 	}, {
-		format : "image/png; mode=8bit",
-		extension: "png"
-	}, {
 		format : "image/jpeg",
 		extension: "jpg"
 	}, {
@@ -48,6 +45,9 @@
 	}, {
 		format : "image/gif",
 		extension: "gif"
+	}, {
+		format : "image/png; mode=8bit",
+		extension: "png"
 	} ];
 
 	/**
@@ -167,8 +167,19 @@
 		description = Cesium.defaultValue(description,
 				Cesium.defaultValue.EMPTY_OBJECT);
 		if (Cesium.defined(description.url)) {
-			resultat=OGCHelper.WMSParser.getMetaDatafromURL(description.url,
-					description);
+			var urlofServer=description.url;
+			var index=urlofServer.lastIndexOf("?");
+			if(index>-1){
+				urlofServer=urlofServer.substring(0,index);
+			}
+			var urlGetCapabilities = urlofServer
+					+ '?SERVICE=WMS&REQUEST=GetCapabilities&tiled=true';
+			if (Cesium.defined(description.proxy)) {
+				urlGetCapabilities = description.proxy.getURL(urlGetCapabilities);
+			}
+			resultat=Cesium.when(Cesium.loadXML(urlGetCapabilities), function(xml) {
+				return OGCHelper.WMSParser.getMetaDatafromXML(xml, description);
+			});
 		} else if (Cesium.defined(description.xml)) {
 			resultat=OGCHelper.WMSParser.getMetaDatafromXML(description.xml, description);
 		}else{
@@ -176,24 +187,6 @@
 					'either description.url or description.xml are required.');
 		}
 		return resultat;
-	};
-
-	OGCHelper.WMSParser.getMetaDatafromURL = function(urlofServer, description) {
-		if (typeof (urlofServer) !== "string") {
-			throw new Cesium.DeveloperError('url must be a string');
-		}
-		var index=urlofServer.lastIndexOf("?");
-		if(index>-1){
-			urlofServer=urlofServer.substring(0,index);
-		}
-		var urlGetCapabilities = urlofServer
-				+ '?SERVICE=WMS&REQUEST=GetCapabilities&tiled=true';
-		if (Cesium.defined(description.proxy)) {
-			urlGetCapabilities = description.proxy.getURL(urlGetCapabilities);
-		}
-		return Cesium.when(Cesium.loadXML(urlGetCapabilities), function(xml) {
-			return OGCHelper.WMSParser.getMetaDatafromXML(xml, description);
-		});
 	};
 
 	OGCHelper.WMSParser.getMetaDatafromXML = function(xml, description) {
@@ -274,7 +267,7 @@
 			resultat.formatArray = undefined;
 		}
 		// a formatImage should always exist !!
-		for(var j=0;j<nodeFormats.length && !Cesium.defined(resultat.formatArray);j++){
+		for(var j=0;j<nodeFormats.length && !Cesium.defined(resultat.formatImage);j++){
 			var OGCAvailables=OGCHelper.FormatImage.filter(function(elt){
 				return elt.format===nodeFormats[j].textContent;
 			});
@@ -476,10 +469,7 @@
 		resultat.heightMapHeight = Cesium.defaultValue(description.heightMapHeight,resultat.heightMapWidth);
 		var maxLevel = Cesium.defaultValue(description.maxLevel, 11);
 		var proxy=description.proxy;
-		resultat.hasStyledImage=Cesium.defaultValue(description.hasStyledImage,false);
-		if (typeof (resultat.hasStyledImage) != "boolean") {
-			throw new Cesium.DeveloperError("hasStyledImage must be defined as a boolean");
-		}
+		resultat.hasStyledImage=Cesium.defaultValue(description.hasStyledImage,typeof(description.styleName)==="string");
 		resultat.waterMask=Cesium.defaultValue(description.waterMask, false);
 		if (typeof (resultat.waterMask) != "boolean") {
 			resultat.waterMask = false;
@@ -560,7 +550,17 @@
 				Cesium.defaultValue.EMPTY_OBJECT);
     	var resultat;
     	if (Cesium.defined(description.url)) {
-			resultat=Cesium.loadXML(description.url).then(function(xml){return OGCHelper.WMTSParser.getMetaDatafromXML(xml,description);});
+    		var urlofServer=description.url;
+			var index=urlofServer.lastIndexOf("?");
+			if(index>-1){
+				urlofServer=urlofServer.substring(0,index);
+			}
+			var urlGetCapabilities = urlofServer
+					+ '?REQUEST=GetCapabilities';
+			if (Cesium.defined(description.proxy)) {
+				urlGetCapabilities = description.proxy.getURL(urlGetCapabilities);
+			}
+			resultat=Cesium.loadXML(urlGetCapabilities).then(function(xml){return OGCHelper.WMTSParser.getMetaDatafromXML(xml,description);});
 		} else if (Cesium.defined(description.xml)) {
 			resultat=OGCHelper.WMTSParser.getMetaDatafromXML(description.xml,description);
 		}else{
@@ -890,7 +890,7 @@
 	* hasWaterMask: 			boolean to indicate to generate a waterMask
 	* childrenMask: 			Number defining the childrenMask
 	*/
-	GeoserverTerrainProvider.imageToHeightmapTerrainData=function(image,limitations,size,hasWaterMask,childrenMask){
+	GeoserverTerrainProvider.imageToHeightmapTerrainData=function(image,limitations,size,hasWaterMask,childrenMask,hasStyledImage){
 		if(typeof(size)=="number"){
 			size={width:size,height:size};
 		}
@@ -901,9 +901,9 @@
 		for (var i = 0; i < dataPixels.length; i += 4) {
 			var msb=dataPixels[i];
 			var lsb=dataPixels[i+1];
-			msb=(msb>127?msb-256:msb);
-			var valeur = (msb<< 8 | lsb) - limitations.offset;
-			if (valeur > limitations.lowest && valeur < limitations.highest) {
+			var isCorrect=dataPixels[i+2]>128;
+			var valeur = (msb<< 8 | lsb) - limitations.offset-32768;
+			if (valeur > limitations.lowest && valeur < limitations.highest && (isCorrect||hasStyledImage)) {
 				buffer[i / 4] = valeur;
 				somme += valeur;
 				goodCell++;
@@ -952,14 +952,11 @@
 							var urlArray=templateToURL(resultat.URLtemplateImage(x,y,level),x, y, level,provider);
 							var limitations={highest:resultat.highest,lowest:resultat.lowest,offset:resultat.offset};
 							var hasChildren = terrainChildrenMask(x, y, level,provider);
-							if (resultat.hasStyledImage) {
-								limitations.offset=limitations.offset-32768;
-							}
 							var promise = Cesium.throttleRequestByServer(urlArray,Cesium.loadImage);
 							if (Cesium.defined(promise)) {
 								retour = Cesium.when(promise,function(image){
 											return GeoserverTerrainProvider.imageToHeightmapTerrainData(image,limitations,
-												{width:resultat.heightMapWidth,height:resultat.heightMapHeight},resultat.waterMask,hasChildren);
+												{width:resultat.heightMapWidth,height:resultat.heightMapHeight},resultat.waterMask,hasChildren,resultat.hasStyledImage);
 										}).otherwise(function(){
 											return new Cesium.HeightmapTerrainData({
 																		buffer : new Uint16Array(

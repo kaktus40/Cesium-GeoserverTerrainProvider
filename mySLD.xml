@@ -15,7 +15,7 @@
 						</ChannelSelection>
 						<ColorMap extended='true' type='ramp'>
 							<ColorMapEntry color='#000000' quantity='-32768'/>
-							<ColorMapEntry color='#00BA98' quantity='15000'/>
+							<ColorMapEntry color='#BA9800' quantity='15000'/>
 						</ColorMap>
 					</RasterSymbolizer>
 				</Rule>

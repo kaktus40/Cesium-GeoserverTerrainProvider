@@ -3,6 +3,7 @@ package org.geotools.GeotiffTranslate;
 import org.geotools.coverage.CoverageFactoryFinder;
 import org.geotools.coverage.grid.GridCoverage2D;
 import org.geotools.coverage.grid.GridCoverageFactory;
+import org.geotools.coverage.grid.Interpolator2D;
 import org.geotools.coverage.grid.io.imageio.GeoToolsWriteParams;
 import org.geotools.gce.geotiff.GeoTiffFormat;
 import org.geotools.gce.geotiff.GeoTiffReader;
@@ -12,6 +13,7 @@ import org.jaitools.imageutils.ImageUtils;
 import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.parameter.ParameterValue;
 
+import javax.media.jai.Interpolation;
 import javax.media.jai.TiledImage;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
@@ -166,16 +168,28 @@ public class App {
 		int[] tabTemp = { 0 };
 		int valeurEntree;
 		byte valeurRouge, valeurVerte;
+        int nodataValue=(int)reader.getMetadata().getNoData();
+        if(nodataValue==0){
+            nodataValue=-32762;
+        }
+        nodataValue=nodataValue+32768;
+        int high=9000+32768;
+        int low=-500+32768;
 		TiledImage imageSortie = ImageUtils.createConstantImage(width, height,
 				new Byte[] { 0, 0, 0 });
 		Raster raster = grilleEntree.getRenderedImage().getData();
 		for (int x = 0; x < width; x++) {
 			for (int y = 0; y < height; y++) {
-				valeurEntree = raster.getPixel(x, y, tabTemp)[0] - offset;
-				valeurRouge = (byte) (valeurEntree >> 8);
-				valeurVerte = (byte) (valeurEntree - (valeurRouge << 8));
-				imageSortie.setSample(x, y, 0, valeurRouge);
-				imageSortie.setSample(x, y, 1, valeurVerte);
+				valeurEntree = raster.getPixel(x, y, tabTemp)[0] + offset+32768;
+                valeurRouge = (byte) (valeurEntree >> 8);
+                valeurVerte = (byte) (valeurEntree - (valeurRouge << 8));
+                imageSortie.setSample(x, y, 0, valeurRouge);
+                imageSortie.setSample(x, y, 1, valeurVerte);
+                if(valeurEntree==nodataValue||valeurEntree<low||valeurEntree>high) {
+                    imageSortie.setSample(x, y, 2, 0);
+                }else{
+                    imageSortie.setSample(x, y, 2, 255);
+                }
 			}
 		}
 		File temp;
@@ -186,8 +200,9 @@ public class App {
 		}
 		GridCoverageFactory gcf = CoverageFactoryFinder
 				.getGridCoverageFactory(null);
-		GridCoverage2D coverage = gcf.create("cov", imageSortie,
+		GridCoverage2D tmp = gcf.create("cov", imageSortie,
 				grilleEntree.getEnvelope2D());
+        GridCoverage2D coverage=Interpolator2D.create(tmp, Interpolation.getInstance(Interpolation.INTERP_BILINEAR));
 
 		GeoTiffWriter writer = new GeoTiffWriter(temp);
 		writer.write(coverage, values);

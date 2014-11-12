@@ -78,12 +78,12 @@ It's a 16 bit grayscale geotiff used by BIL/DDS plugin to generate an arrayData.
 <img src="images/SRTM90Origine.png" width="600" height="400" />
 
 ##Styled geotiff
-It's a 8 bits red green blue geotiff format that geoserver serves as an image where most significant byte from 16 bit grayscale is stored in color red and least significant byte from 16 bit grayscale is stored in color green. Due to difficulties with SLD, there is an offset of 32768 meters. Also the map is "very red green".
+It's a 8 bits red green blue geotiff format that geoserver serves as an image where most significant byte from 16 bit grayscale is stored in color red and least significant byte from 16 bit grayscale is stored in color green. Moreover there is an offset of 32768 meters in order to have only positive numbers.
 
 <img src="images/SRTM90OrigineStyled.png" width="600" height="400" />
 
-##Converted geotiff
-It's a 8 bits red green blue geotiff format that geoserver serves as an image where most significant byte from 16 bit grayscale is stored in color red and least significant byte from 16 bit grayscale is stored in color green. Unlike Styled geotiff, there is no offset,also the map is very green (yellow color is no data value!!).
+##Converted geotiff BREAKING CHANGE
+It's a 8 bits red green blue geotiff format that geoserver serves as an image where most significant byte from 16 bit grayscale is stored in color red and least significant byte from 16 bit grayscale is stored in color green. Moreover there is an offset of 32768 meters in order to have only positive numbers. The third color (blue) indicates if the pixel has a no data value.
 
 <img src="images/SRTM90Converted.png" width="600" height="400" />
 
