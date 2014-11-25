@@ -337,12 +337,14 @@
 						south=parseFloat(nodeBBox.getAttribute("miny"));
 						north=parseFloat(nodeBBox.getAttribute("maxy"));
 					}
+					var rectReference=new Cesium.Rectangle(west,south,east,north);
+					var scratchRect=new Cesium.Rectangle();
 					resultat.getTileDataAvailable = function(x, y, level){
 						var retour=false;
 						var rectangleCalcul = resultat.tilingScheme.tileXYToNativeRectangle(x, y,level);
 						if(level<maxLevel){
-							if((rectangleCalcul.west >= west ||rectangleCalcul.east <= east) &&
-								(rectangleCalcul.south >= south || rectangleCalcul.north <= north)){
+							Cesium.Rectangle.intersectWith(rectReference,rectangleCalcul,scratchRect);
+							if(!Cesium.Rectangle.isEmpty(scratchRect)){
 								retour=true;
 							}
 						}
