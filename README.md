@@ -4,7 +4,7 @@ cesium-GeoserverTerrainProvider
 GeoserverTerrainProvider: A terrain provider which works with geoserver providing elevation datas in bil, png, gif and jpeg formats. The png format should be prefered. 
 
 #Cesium version 
-Tested with Cesium 1.3 and geoserver 2.5.0.
+Tested with Cesium 1.6 and geoserver 2.6.2.
 
 License: Apache 2.0. Free for commercial and non-commercial use. See LICENSE.md.
 

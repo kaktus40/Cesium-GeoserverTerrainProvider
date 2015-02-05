@@ -1,5 +1,18 @@
 (function() {
 	var OGCHelper = {};
+	 var intersectionRectangle=function(rectangle0,rectangle1){
+		var west = Math.max(rectangle0.west, rectangle1.west);
+		var east = Math.min(rectangle0.east, rectangle1.east);
+		var south = Math.max(rectangle0.south, rectangle1.south);
+		var north = Math.min(rectangle0.north, rectangle1.north);
+		var resultat;
+		if ((east <= west)||(south >= north)) {
+			resultat=undefined;
+		}else{
+			resultat=new Cesium.Rectangle(west, south, east, north);
+		}
+			return resultat;
+	};
 	/**
 	 * static array where CRS availables for OGCHelper are defined
 	 */
@@ -338,15 +351,12 @@
 						north=parseFloat(nodeBBox.getAttribute("maxy"));
 					}
 					var rectReference=new Cesium.Rectangle(west,south,east,north);
-					var scratchRect=new Cesium.Rectangle();
 					resultat.getTileDataAvailable = function(x, y, level){
 						var retour=false;
 						var rectangleCalcul = resultat.tilingScheme.tileXYToNativeRectangle(x, y,level);
 						if(level<maxLevel){
-							Cesium.Rectangle.intersectWith(rectReference,rectangleCalcul,scratchRect);
-							if(!Cesium.Rectangle.isEmpty(scratchRect)){
-								retour=true;
-							}
+							var scratchRectangle=intersectionRectangle(rectReference, rectangleCalcul);
+							retour= Cesium.defined(scratchRectangle);
 						}
 						return retour;
 					};
@@ -539,8 +549,8 @@
 			var limites=new Cesium.Rectangle(minx,miny,maxx,maxy);
 			resultat.getTileDataAvailable=function(x,y,level){
 				var rect= resultat.tilingScheme.tileXYToNativeRectangle(x, y,level);
-				var scratchRectangle=Cesium.Rectangle.intersectWith(limites, rect);
-				return !Cesium.Rectangle.isEmpty(scratchRectangle) && level<maxLevel && level<tileSets.length;
+				var scratchRectangle=intersectionRectangle(limites, rect);
+				return Cesium.defined(scratchRectangle) && level<maxLevel && level<tileSets.length;
 			}
 			resultat.ready=true;
 		}
