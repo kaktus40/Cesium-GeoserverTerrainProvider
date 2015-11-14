@@ -1,6 +1,6 @@
 (function() {
 	var OGCHelper = {};
-	 var intersectionRectangle=function(rectangle0,rectangle1){
+	var intersectionRectangle=function(rectangle0,rectangle1){
 		var west = Math.max(rectangle0.west, rectangle1.west);
 		var east = Math.min(rectangle0.east, rectangle1.east);
 		var south = Math.max(rectangle0.south, rectangle1.south);
@@ -11,63 +11,63 @@
 		}else{
 			resultat=new Cesium.Rectangle(west, south, east, north);
 		}
-			return resultat;
+		return resultat;
 	};
 	/**
 	 * static array where CRS availables for OGCHelper are defined
 	 */
-	OGCHelper.CRS = [ {
-		name : "CRS:84",
-		ellipsoid : Cesium.Ellipsoid.WGS84,
-		firstAxeIsLatitude : false,
-		tilingScheme : Cesium.GeographicTilingScheme,
-		supportedCRS:"urn:ogc:def:crs:OGC:2:84"
-	}, {
-		name : "EPSG:4326",
-		ellipsoid : Cesium.Ellipsoid.WGS84,
-		firstAxeIsLatitude : true,
-		tilingScheme : Cesium.GeographicTilingScheme,
-		SupportedCRS:"urn:ogc:def:crs:EPSG::4326"
-	}, {
-		name : "EPSG:3857",
-		ellipsoid : Cesium.Ellipsoid.WGS84,
-		firstAxeIsLatitude : false,
-		tilingScheme : Cesium.WebMercatorTilingScheme,
-		SupportedCRS: "urn:ogc:def:crs:EPSG::3857"
-	}, {
-		name : "OSGEO:41001",
-		ellipsoid : Cesium.Ellipsoid.WGS84,
-		firstAxeIsLatitude : false,
-		tilingScheme : Cesium.WebMercatorTilingScheme,
-		SupportedCRS: "urn:ogc:def:crs:EPSG::3857"
-	} ];
+	 OGCHelper.CRS = [ {
+	 	name : "CRS:84",
+	 	ellipsoid : Cesium.Ellipsoid.WGS84,
+	 	firstAxeIsLatitude : false,
+	 	tilingScheme : Cesium.GeographicTilingScheme,
+	 	supportedCRS:"urn:ogc:def:crs:OGC:2:84"
+	 }, {
+	 	name : "EPSG:4326",
+	 	ellipsoid : Cesium.Ellipsoid.WGS84,
+	 	firstAxeIsLatitude : true,
+	 	tilingScheme : Cesium.GeographicTilingScheme,
+	 	SupportedCRS:"urn:ogc:def:crs:EPSG::4326"
+	 }, {
+	 	name : "EPSG:3857",
+	 	ellipsoid : Cesium.Ellipsoid.WGS84,
+	 	firstAxeIsLatitude : false,
+	 	tilingScheme : Cesium.WebMercatorTilingScheme,
+	 	SupportedCRS: "urn:ogc:def:crs:EPSG::3857"
+	 }, {
+	 	name : "OSGEO:41001",
+	 	ellipsoid : Cesium.Ellipsoid.WGS84,
+	 	firstAxeIsLatitude : false,
+	 	tilingScheme : Cesium.WebMercatorTilingScheme,
+	 	SupportedCRS: "urn:ogc:def:crs:EPSG::3857"
+	 } ];
 
 	/**
 	 * static array where image formats available for OGCHelper are
 	 * defined
 	 */
-	OGCHelper.FormatImage = [ {
-		format : "image/png",
-		extension: "png"
-	}, {
-		format : "image/jpeg",
-		extension: "jpg"
-	}, {
-		format : "image/jpeg",
-		extension: "jpeg"
-	}, {
-		format : "image/gif",
-		extension: "gif"
-	}, {
-		format : "image/png; mode=8bit",
-		extension: "png"
-	} ];
+	 OGCHelper.FormatImage = [ {
+	 	format : "image/png",
+	 	extension: "png"
+	 }, {
+	 	format : "image/jpeg",
+	 	extension: "jpg"
+	 }, {
+	 	format : "image/jpeg",
+	 	extension: "jpeg"
+	 }, {
+	 	format : "image/gif",
+	 	extension: "gif"
+	 }, {
+	 	format : "image/png; mode=8bit",
+	 	extension: "png"
+	 } ];
 
 	/**
 	 * static array where data array availables for OGCHelper are defined
 	 */
-	OGCHelper.FormatArray = [ {
-		format : "image/bil",
+	 OGCHelper.FormatArray = [ {
+	 	format : "image/bil",
 		/**
 		* bufferIn : buffer to process (switch byte order and check the data limitations)
 		* size: defines the dimension of the array (size.height* size.width cells)
@@ -159,58 +159,58 @@
 	 *	- tilingScheme: the tiling scheme to use
 	 *	- [imageSize]: {width:integer, height:integer} dimension of the requested images
 	 */
-	OGCHelper.parser=function(description){
-		var resultat;
-		description = Cesium.defaultValue(description,
-				Cesium.defaultValue.EMPTY_OBJECT);
-		switch(description.service){
-			case "TMS":
-				resultat=OGCHelper.TMSParser.generate(description);
-			break;
-			case "WMTS":
-				resultat=OGCHelper.WMTSParser.generate(description);
-			break;
-			default: resultat=OGCHelper.WMSParser.generate(description);
-		}
-		return resultat;
-	}
+	 OGCHelper.parser=function(description){
+	 	var resultat;
+	 	description = Cesium.defaultValue(description,
+	 		Cesium.defaultValue.EMPTY_OBJECT);
+	 	switch(description.service){
+	 		case "TMS":
+	 		resultat=OGCHelper.TMSParser.generate(description);
+	 		break;
+	 		case "WMTS":
+	 		resultat=OGCHelper.WMTSParser.generate(description);
+	 		break;
+	 		default: resultat=OGCHelper.WMSParser.generate(description);
+	 	}
+	 	return resultat;
+	 }
 
-	OGCHelper.WMSParser.generate=function(description){
-		var resultat;
-		description = Cesium.defaultValue(description,
-				Cesium.defaultValue.EMPTY_OBJECT);
-		if (Cesium.defined(description.url)) {
-			var urlofServer=description.url;
-			var index=urlofServer.lastIndexOf("?");
-			if(index>-1){
-				urlofServer=urlofServer.substring(0,index);
-			}
-			var urlGetCapabilities = urlofServer
-					+ '?SERVICE=WMS&REQUEST=GetCapabilities&tiled=true';
-			if (Cesium.defined(description.proxy)) {
-				urlGetCapabilities = description.proxy.getURL(urlGetCapabilities);
-			}
-			resultat=Cesium.when(Cesium.loadXML(urlGetCapabilities), function(xml) {
-				return OGCHelper.WMSParser.getMetaDatafromXML(xml, description);
-			});
-		} else if (Cesium.defined(description.xml)) {
-			resultat=OGCHelper.WMSParser.getMetaDatafromXML(description.xml, description);
-		}else{
-			throw new Cesium.DeveloperError(
-					'either description.url or description.xml are required.');
-		}
-		return resultat;
-	};
+	 OGCHelper.WMSParser.generate=function(description){
+	 	var resultat;
+	 	description = Cesium.defaultValue(description,
+	 		Cesium.defaultValue.EMPTY_OBJECT);
+	 	if (Cesium.defined(description.url)) {
+	 		var urlofServer=description.url;
+	 		var index=urlofServer.lastIndexOf("?");
+	 		if(index>-1){
+	 			urlofServer=urlofServer.substring(0,index);
+	 		}
+	 		var urlGetCapabilities = urlofServer
+	 		+ '?SERVICE=WMS&REQUEST=GetCapabilities&tiled=true';
+	 		if (Cesium.defined(description.proxy)) {
+	 			urlGetCapabilities = description.proxy.getURL(urlGetCapabilities);
+	 		}
+	 		resultat=Cesium.when(Cesium.loadXML(urlGetCapabilities), function(xml) {
+	 			return OGCHelper.WMSParser.getMetaDatafromXML(xml, description);
+	 		});
+	 	} else if (Cesium.defined(description.xml)) {
+	 		resultat=OGCHelper.WMSParser.getMetaDatafromXML(description.xml, description);
+	 	}else{
+	 		throw new Cesium.DeveloperError(
+	 			'either description.url or description.xml are required.');
+	 	}
+	 	return resultat;
+	 };
 
-	OGCHelper.WMSParser.getMetaDatafromXML = function(xml, description) {
-		if (!(xml instanceof XMLDocument)) {
-			throw new Cesium.DeveloperError('xml must be a XMLDocument');
-		}
+	 OGCHelper.WMSParser.getMetaDatafromXML = function(xml, description) {
+	 	if (!(xml instanceof XMLDocument)) {
+	 		throw new Cesium.DeveloperError('xml must be a XMLDocument');
+	 	}
 		// get version of wms 1.1.X or 1.3.X=> for 1.3 use firstAxe for order of
 		// CRS
 		if (!Cesium.defined(description.layerName)) {
 			throw new Cesium.DeveloperError(
-					'description.layerName is required.');
+				'description.layerName is required.');
 		}
 		var resultat={};
 		var layerName = description.layerName;
@@ -266,8 +266,8 @@
 			}
 		}
 		if (Cesium.defined(resultat.formatArray)
-				&& typeof (resultat.formatArray.format) === "string"
-				&& typeof (resultat.formatArray.postProcessArray) === "function") {
+			&& typeof (resultat.formatArray.format) === "string"
+			&& typeof (resultat.formatArray.postProcessArray) === "function") {
 			resultat.formatArray.terrainDataStructure = {
 				heightScale : 1.0,
 				heightOffset : 0,
@@ -289,7 +289,7 @@
 			}
 		}
 		if (Cesium.defined(resultat.formatImage)
-				&& typeof (resultat.formatImage.format) === "string") {
+			&& typeof (resultat.formatImage.format) === "string") {
 			resultat.formatImage.terrainDataStructure = {
 				heightScale : 1.0,
 				heightOffset : 0,
@@ -302,7 +302,7 @@
 			resultat.formatImage = undefined;
 		}
 		var layerNodes = xml
-				.querySelectorAll("Layer[queryable='1'],Layer[queryable='true']");
+		.querySelectorAll("Layer[queryable='1'],Layer[queryable='true']");
 		var layerNode;
 		for (var m = 0; m < layerNodes.length && !Cesium.defined(layerNode); m++) {
 			if (layerNodes[m].querySelector("Name").textContent === layerName) {
@@ -328,8 +328,8 @@
 				var CRSSelected = OGCHelper.CRS[n];
 				var referentialName = CRSSelected.name;
 				var nodeBBox = layerNode.querySelector("BoundingBox[SRS='"
-						+ referentialName + "'],BoundingBox[CRS='"
-						+ referentialName + "']");
+					+ referentialName + "'],BoundingBox[CRS='"
+					+ referentialName + "']");
 
 				if (nodeBBox !== null) {
 					CRS = referentialName;
@@ -381,8 +381,8 @@
 			var out=false;
 			for (var q=0;q<tileSets.length&&!out;q++){
 				var isGoodSRS=tileSets[q].querySelector("BoundingBox[SRS='"
-							+ CRS + "'],BoundingBox[CRS='"
-							+ CRS + "']")!==null;
+					+ CRS + "'],BoundingBox[CRS='"
+					+ CRS + "']")!==null;
 				var isGoodLayer=tileSets[q].querySelector("Layers").textContent=== layerName;
 				if(isGoodLayer&&isGoodSRS){
 					requestedSize.width=parseInt(tileSets[q].querySelector("Width").textContent);
@@ -392,8 +392,8 @@
 			}
 
 			resultat.ready = found
-					&& (Cesium.defined(resultat.formatImage) || Cesium.defined(resultat.formatArray))
-					&& Cesium.defined(version);
+			&& (Cesium.defined(resultat.formatImage) || Cesium.defined(resultat.formatArray))
+			&& Cesium.defined(version);
 		}
 
 		if(resultat.ready){
@@ -416,30 +416,30 @@
 
 			if(resultat.formatArray){
 				var URLtemplateArray=URLtemplate+ '&format=' +resultat.formatArray.format+ '&width='
-					+ resultat.heightMapWidth + '&height=' + resultat.heightMapHeight;
+				+ resultat.heightMapWidth + '&height=' + resultat.heightMapHeight;
 				resultat.URLtemplateArray=function(){return URLtemplateArray;};
 			}
 		}
 		return resultat;
 	};
 
-    OGCHelper.TMSParser.generate=function(description){
-    	var resultat;
-    	description = Cesium.defaultValue(description,
-				Cesium.defaultValue.EMPTY_OBJECT);
-    	if (Cesium.defined(description.url)) {
+	OGCHelper.TMSParser.generate=function(description){
+		var resultat;
+		description = Cesium.defaultValue(description,
+			Cesium.defaultValue.EMPTY_OBJECT);
+		if (Cesium.defined(description.url)) {
 			resultat=Cesium.loadXML(description.url).then(function(xml){return OGCHelper.TMSParser.parseXML(xml,description);});
 		} else if (Cesium.defined(description.xml)) {
 			resultat=OGCHelper.TMSParser.parseXML(description.xml,description);
 		}else{
 			throw new Cesium.DeveloperError(
-					'either description.url or description.xml are required.');
+				'either description.url or description.xml are required.');
 		}
 		return resultat;
-    };
+	};
 
-    OGCHelper.TMSParser.parseXML=function(xml,description){
-    	if (!(xml instanceof XMLDocument)) {
+	OGCHelper.TMSParser.parseXML=function(xml,description){
+		if (!(xml instanceof XMLDocument)) {
 			throw new Cesium.DeveloperError('xml must be a XMLDocument');
 		}
 		var resultat;
@@ -472,10 +472,10 @@
 			resultat=OGCHelper.TMSParser.getMetaDatafromXML(xml,description);
 		}
 		return resultat;
-    };
+	};
 
-    OGCHelper.TMSParser.getMetaDatafromXML=function(xml,description){
-    	var resultat={};
+	OGCHelper.TMSParser.getMetaDatafromXML=function(xml,description){
+		var resultat={};
 		resultat.ready = false;
 		resultat.heightMapWidth = Cesium.defaultValue(description.heightMapWidth,65);
 		resultat.heightMapHeight = Cesium.defaultValue(description.heightMapHeight,resultat.heightMapWidth);
@@ -489,15 +489,15 @@
 		resultat.offset=Cesium.defaultValue(description.offset,0);
 		resultat.highest=Cesium.defaultValue(description.highest,12000);
 		resultat.lowest=Cesium.defaultValue(description.lowest,-500);
-    	
+
 		var srs=xml.querySelector("SRS").textContent;
 		var goodCRS=OGCHelper.CRS.filter(function(elt){
 			return elt.name===srs;
 		});
 		if(goodCRS.length>0){
 			resultat.tilingScheme = new goodCRS[0].tilingScheme({
-					ellipsoid : goodCRS[0].ellipsoid
-				});
+				ellipsoid : goodCRS[0].ellipsoid
+			});
 		}
 
 		var format=xml.querySelector("TileFormat");
@@ -532,7 +532,7 @@
 		}
 
 		if(!Cesium.defined(resultat.tileSets)||!Cesium.defined(resultat.formatImage)||!Cesium.defined(resultat.tilingScheme)){
-			 resultat=undefined;
+			resultat=undefined;
 		}else{
 			resultat.URLtemplateImage=function(x,y,level){
 				var retour="";
@@ -555,20 +555,20 @@
 			resultat.ready=true;
 		}
 		return resultat;
-    };
+	};
 
-    OGCHelper.WMTSParser.generate=function(description){
-    	description = Cesium.defaultValue(description,
-				Cesium.defaultValue.EMPTY_OBJECT);
-    	var resultat;
-    	if (Cesium.defined(description.url)) {
-    		var urlofServer=description.url;
+	OGCHelper.WMTSParser.generate=function(description){
+		description = Cesium.defaultValue(description,
+			Cesium.defaultValue.EMPTY_OBJECT);
+		var resultat;
+		if (Cesium.defined(description.url)) {
+			var urlofServer=description.url;
 			var index=urlofServer.lastIndexOf("?");
 			if(index>-1){
 				urlofServer=urlofServer.substring(0,index);
 			}
 			var urlGetCapabilities = urlofServer
-					+ '?REQUEST=GetCapabilities';
+			+ '?REQUEST=GetCapabilities';
 			if (Cesium.defined(description.proxy)) {
 				urlGetCapabilities = description.proxy.getURL(urlGetCapabilities);
 			}
@@ -577,12 +577,12 @@
 			resultat=OGCHelper.WMTSParser.getMetaDatafromXML(description.xml,description);
 		}else{
 			throw new Cesium.DeveloperError(
-					'either description.url or description.xml are required.');
+				'either description.url or description.xml are required.');
 		}
 		return resultat;
-    };
+	};
 
-    OGCHelper.WMTSParser.getMetaDatafromXML = function(xml,description){
+	OGCHelper.WMTSParser.getMetaDatafromXML = function(xml,description){
 		if (!(xml instanceof XMLDocument)) {
 			throw new Cesium.DeveloperError('xml must be a XMLDocument');
 		}
@@ -671,14 +671,14 @@
 			//format
 			var nodeFormats=[].slice.call(layerNode.querySelectorAll("Format"));
 			for (var l = 0; l < OGCHelper.FormatImage.length
-					&& !Cesium.defined(formatImage); l++) {
+				&& !Cesium.defined(formatImage); l++) {
 				var validFormats=nodeFormats.filter(function(elt){
 					return elt.textContent === OGCHelper.FormatImage[l].format;
 				});
-				if(validFormats.length>0){
-					formatImage = OGCHelper.FormatImage[l];
-				}
+			if(validFormats.length>0){
+				formatImage = OGCHelper.FormatImage[l];
 			}
+		}
 			//TileMatrixSetLink =>TileMatrixSet
 			listTileMatrixSetLinkNode=layerNode.querySelectorAll("TileMatrixSetLink");
 		}
@@ -716,7 +716,7 @@
 					var scaleDenominator=parseFloat(noeud.querySelector("ScaleDenominator").textContent);
 					return {id:id,maxWidth:maxWidth,maxHeight:maxHeight,scaleDenominator:scaleDenominator,complete:false,
 						tileWidth:tileWidth,tileHeight:tileHeight};
-				});
+					});
 
 				tileSets.sort(function(a,b){
 					return b.scaleDenominator-a.scaleDenominator;
@@ -739,9 +739,9 @@
 
 				if(tileSets.length>0){
 					resultat.tilingScheme = new CRSSelected.tilingScheme({
-								ellipsoid : CRSSelected.ellipsoid,
-								numberOfLevelZeroTilesX:tileSets[0].maxWidth,
-								numberOfLevelZeroTilesY:tileSets[0].maxHeight});
+						ellipsoid : CRSSelected.ellipsoid,
+						numberOfLevelZeroTilesX:tileSets[0].maxWidth,
+						numberOfLevelZeroTilesY:tileSets[0].maxHeight});
 					var resourceURL=layerNode.querySelector("ResourceURL[format='"+formatImage.format+"']");
 
 					if(resourceURL!=null){
@@ -818,40 +818,52 @@
 	 *            [description.xml] the xml after requesting "getCapabilities".
 	 * @see TerrainProvider
 	 */
-	var GeoserverTerrainProvider = function GeoserverTerrainProvider(
-			description) {
-		if (!Cesium.defined(description)) {
-			throw new Cesium.DeveloperError('description is required.');
-		}
-		var errorEvent = new Cesium.Event();
+	 var GeoserverTerrainProvider = function GeoserverTerrainProvider(
+	 	description) {
+	 	if (!Cesium.defined(description)) {
+	 		throw new Cesium.DeveloperError('description is required.');
+	 	}
+	 	var errorEvent = new Cesium.Event();
 
-		var credit = description.credit;
-		if (typeof credit === 'string') {
-			credit = new Cesium.Credit(credit);
-		}
+	 	var credit = description.credit;
+	 	if (typeof credit === 'string') {
+	 		credit = new Cesium.Credit(credit);
+	 	}
 
-		this.ready=false;
+	 	this.ready=false;
+	 	this._readyPromise = Cesium.when.defer();
 
-		Cesium.defineProperties(this, {
-			errorEvent : {
-				get : function() {
-					return errorEvent;
-				}
-			},
-			credit : {
-				get : function() {
-					return credit;
-				}
-			},
-	        hasVertexNormals : {
-	            get : function() {
-	                return false;
-	            }
-	        }
-		});
-		var promise=OGCHelper.parser(description);
-		TerrainParser(promise,this);
-	};
+	 	Cesium.defineProperties(this, {
+	 		errorEvent : {
+	 			get : function() {
+	 				return errorEvent;
+	 			}
+	 		},
+	 		credit : {
+	 			get : function() {
+	 				return credit;
+	 			}
+	 		},
+	 		hasVertexNormals : {
+	 			get : function() {
+	 				return false;
+	 			}
+	 		},
+	        /**
+         * Gets a promise that resolves to true when the provider is ready for use.
+         * @memberof CesiumTerrainProvider.prototype
+         * @type {Promise.<Boolean>}
+         * @readonly
+         */
+         readyPromise : {
+         	get : function() {
+         		return this._readyPromise.promise;
+         	}
+         }
+     });
+	 	var promise=OGCHelper.parser(description);
+	 	TerrainParser(promise,this);
+	 };
 	/**
 	*
 	* arrayBuffer: 	the arrayBuffer to process to have a HeightmapTerrainData
@@ -882,7 +894,7 @@
 		};
 		if(hasWaterMask){
 			var waterMask = new Uint8Array(
-					heightBuffer.length);
+				heightBuffer.length);
 			for (var i = 0; i < heightBuffer.length; i++) {
 				if (heightBuffer[i] <= 0) {
 					waterMask[i] = 255;
@@ -931,177 +943,178 @@
 			height : size.height,
 			childTileMask : childrenMask,
 			structure : {heightScale : 1.0,
-						heightOffset : 0.0,
-						elementsPerHeight : 1,
-						stride : 1,
-						elementMultiplier : 256.0,
-						isBigEndian : false}
-		};
-		if(hasWaterMask){
-			var waterMask = new Uint8Array(
+				heightOffset : 0.0,
+				elementsPerHeight : 1,
+				stride : 1,
+				elementMultiplier : 256.0,
+				isBigEndian : false}
+			};
+			if(hasWaterMask){
+				var waterMask = new Uint8Array(
 					heightBuffer.length);
-			for (var i = 0; i < heightBuffer.length; i++) {
-				if (heightBuffer[i] <= 0) {
-					waterMask[i] = 255;
-				}
-			}
-			optionsHeihtmapTerrainData.waterMask=waterMask;
-		}
-		return new Cesium.HeightmapTerrainData(optionsHeihtmapTerrainData);
-	};
-	
-	function TerrainParser(promise,provider){
-		Cesium.when(promise,function(resultat){
-			console.log(resultat);
-			if(Cesium.defined(resultat)&&(resultat.ready)){
-				resultat.levelZeroMaximumGeometricError = Cesium.TerrainProvider.getEstimatedLevelZeroGeometricErrorForAHeightmap(
-							resultat.tilingScheme.ellipsoid, resultat.heightMapWidth,
-							resultat.tilingScheme.getNumberOfXTilesAtLevel(0));
-				if(Cesium.defined(resultat.URLtemplateImage)){
-					resultat.getHeightmapTerrainDataImage=function(x,y,level){
-						var retour;
-						if(!isNaN(x+y+level)){
-							var urlArray=templateToURL(resultat.URLtemplateImage(x,y,level),x, y, level,provider);
-							var limitations={highest:resultat.highest,lowest:resultat.lowest,offset:resultat.offset};
-							var hasChildren = terrainChildrenMask(x, y, level,provider);
-							var promise = Cesium.throttleRequestByServer(urlArray,Cesium.loadImage);
-							if (Cesium.defined(promise)) {
-								retour = Cesium.when(promise,function(image){
-											return GeoserverTerrainProvider.imageToHeightmapTerrainData(image,limitations,
-												{width:resultat.heightMapWidth,height:resultat.heightMapHeight},resultat.waterMask,hasChildren,resultat.hasStyledImage);
-										}).otherwise(function(){
-											return new Cesium.HeightmapTerrainData({
-																		buffer : new Uint16Array(
-																				resultat.heightMapWidth
-																						* resultat.heightMapHeight),
-																		width : resultat.heightMapWidth,
-																		height : resultat.heightMapHeight,
-																		childTileMask : hasChildren,
-																		waterMask : new Uint8Array(resultat.heightMapWidth
-																						* resultat.heightMapHeight),
-																		structure : resultat.formatImage.terrainDataStructure
-																	});
-										});}
-						}
-						return retour;
-					};
-				}
-
-				if(Cesium.defined(resultat.URLtemplateArray)){
-					resultat.getHeightmapTerrainDataArray=function(x, y, level){
-						var retour;
-						if(!isNaN(x+y+level)){
-							var urlArray=templateToURL(resultat.URLtemplateArray(x,y,level),x, y, level,provider);
-							var limitations={highest:resultat.highest,lowest:resultat.lowest,offset:resultat.offset};
-							var hasChildren = terrainChildrenMask(x, y, level,provider);
-							
-					        var promise = Cesium.throttleRequestByServer(urlArray,Cesium.loadArrayBuffer);
-					        if (Cesium.defined(promise)) {
-								retour = Cesium.when(promise,
-													function(arrayBuffer) {
-														return GeoserverTerrainProvider.arrayToHeightmapTerrainData(arrayBuffer,limitations,
-															{width:resultat.heightMapWidth,height:resultat.heightMapHeight},resultat.formatArray,resultat.waterMask,hasChildren);
-													}
-												).otherwise(
-													function() {
-														if (Cesium.defined(resultat.getHeightmapTerrainDataImage)) {
-															return resultat.getHeightmapTerrainDataImage(x, y, level);
-														}else{
-															return new Cesium.HeightmapTerrainData({
-																		buffer : new Uint16Array(
-																				resultat.heightMapWidth
-																						* resultat.heightMapHeight),
-																		width : resultat.heightMapWidth,
-																		height : resultat.heightMapHeight,
-																		childTileMask : hasChildren,
-																		waterMask : new Uint8Array(resultat.heightMapWidth
-																						* resultat.heightMapHeight),
-																		structure : resultat.formatImage.terrainDataStructure
-																	});
-														}
-													});
-							}
-					        
-						}
-						return retour;
-					};
-				}
-
-				provider.getLevelMaximumGeometricError=function(level){
-					return resultat.levelZeroMaximumGeometricError/ (1 << level);
-				};
-
-				provider.requestTileGeometry=function(x, y, level){
-					var retour;
-					if(Cesium.defined(resultat.getHeightmapTerrainDataArray)){
-						retour=resultat.getHeightmapTerrainDataArray(x, y, level);
-					}else if(Cesium.defined(resultat.getHeightmapTerrainDataImage)){
-						retour=resultat.getHeightmapTerrainDataImage(x, y, level);
+				for (var i = 0; i < heightBuffer.length; i++) {
+					if (heightBuffer[i] <= 0) {
+						waterMask[i] = 255;
 					}
-					return retour;
 				}
-
-				Cesium.defineProperties(provider, {
-					tilingScheme : {
-						get : function() {
-							return resultat.tilingScheme ;
-						}
-					},
-					ready : {
-						get : function() {
-							return resultat.ready;
-						}
-					},
-			        hasWaterMask : {
-			            get : function() {
-			                return resultat.waterMask;
-			            }
-			        },
-			        heightMapHeight : {
-			            get : function() {
-			                return resultat.heightMapHeight;
-			            }
-			        },
-			        heightMapWidth : {
-			            get : function() {
-			                return resultat.heightMapWidth;
-			            }
-			        },
-			        getTileDataAvailable: {
-			            get : function() {
-			                return resultat.getTileDataAvailable;
-			            }
-			        }
-				});
+				optionsHeihtmapTerrainData.waterMask=waterMask;
 			}
-		});
-	}
+			return new Cesium.HeightmapTerrainData(optionsHeihtmapTerrainData);
+		};
 
-	function templateToURL(urlParam,x,y,level,provider){
-		var rect= provider.tilingScheme.tileXYToNativeRectangle(x, y,level);
-		var xSpacing = (rect.east - rect.west)/ (provider.heightMapWidth - 1);
-		var ySpacing = (rect.north - rect.south)/ (provider.heightMapHeight - 1);
-		rect.west -= xSpacing * 0.5;
-		rect.east += xSpacing * 0.5;
-		rect.south -= ySpacing * 0.5;
-		rect.north += ySpacing * 0.5;
+		function TerrainParser(promise,provider){
+			Cesium.when(promise,function(resultat){
+				console.log(resultat);
+				provider._readyPromise.resolve(resultat.ready);
+				if(Cesium.defined(resultat)&&(resultat.ready)){
+					resultat.levelZeroMaximumGeometricError = Cesium.TerrainProvider.getEstimatedLevelZeroGeometricErrorForAHeightmap(
+						resultat.tilingScheme.ellipsoid, resultat.heightMapWidth,
+						resultat.tilingScheme.getNumberOfXTilesAtLevel(0));
+					if(Cesium.defined(resultat.URLtemplateImage)){
+						resultat.getHeightmapTerrainDataImage=function(x,y,level){
+							var retour;
+							if(!isNaN(x+y+level)){
+								var urlArray=templateToURL(resultat.URLtemplateImage(x,y,level),x, y, level,provider);
+								var limitations={highest:resultat.highest,lowest:resultat.lowest,offset:resultat.offset};
+								var hasChildren = terrainChildrenMask(x, y, level,provider);
+								var promise = Cesium.throttleRequestByServer(urlArray,Cesium.loadImage);
+								if (Cesium.defined(promise)) {
+									retour = Cesium.when(promise,function(image){
+										return GeoserverTerrainProvider.imageToHeightmapTerrainData(image,limitations,
+											{width:resultat.heightMapWidth,height:resultat.heightMapHeight},resultat.waterMask,hasChildren,resultat.hasStyledImage);
+									}).otherwise(function(){
+										return new Cesium.HeightmapTerrainData({
+											buffer : new Uint16Array(
+												resultat.heightMapWidth
+												* resultat.heightMapHeight),
+											width : resultat.heightMapWidth,
+											height : resultat.heightMapHeight,
+											childTileMask : hasChildren,
+											waterMask : new Uint8Array(resultat.heightMapWidth
+												* resultat.heightMapHeight),
+											structure : resultat.formatImage.terrainDataStructure
+										});
+									});}
+								}
+								return retour;
+							};
+						}
 
-		var yTiles = provider.tilingScheme.getNumberOfYTilesAtLevel(level);
-		var tmsY = (yTiles - y - 1);
+						if(Cesium.defined(resultat.URLtemplateArray)){
+							resultat.getHeightmapTerrainDataArray=function(x, y, level){
+								var retour;
+								if(!isNaN(x+y+level)){
+									var urlArray=templateToURL(resultat.URLtemplateArray(x,y,level),x, y, level,provider);
+									var limitations={highest:resultat.highest,lowest:resultat.lowest,offset:resultat.offset};
+									var hasChildren = terrainChildrenMask(x, y, level,provider);
 
-		return urlParam.replace("{south}",rect.south).replace("{north}",rect.north).replace("{west}",rect.west)
-		.replace("{east}",rect.east).replace("{x}",x).replace("{y}",y).replace("{tmsY}",tmsY);
-	}
+									var promise = Cesium.throttleRequestByServer(urlArray,Cesium.loadArrayBuffer);
+									if (Cesium.defined(promise)) {
+										retour = Cesium.when(promise,
+											function(arrayBuffer) {
+												return GeoserverTerrainProvider.arrayToHeightmapTerrainData(arrayBuffer,limitations,
+													{width:resultat.heightMapWidth,height:resultat.heightMapHeight},resultat.formatArray,resultat.waterMask,hasChildren);
+											}
+											).otherwise(
+											function() {
+												if (Cesium.defined(resultat.getHeightmapTerrainDataImage)) {
+													return resultat.getHeightmapTerrainDataImage(x, y, level);
+												}else{
+													return new Cesium.HeightmapTerrainData({
+														buffer : new Uint16Array(
+															resultat.heightMapWidth
+															* resultat.heightMapHeight),
+														width : resultat.heightMapWidth,
+														height : resultat.heightMapHeight,
+														childTileMask : hasChildren,
+														waterMask : new Uint8Array(resultat.heightMapWidth
+															* resultat.heightMapHeight),
+														structure : resultat.formatImage.terrainDataStructure
+													});
+												}
+											});
+										}
 
-	function terrainChildrenMask(x, y, level,provider){
-		var mask=0;
-		var childLevel = level + 1;
-			mask |= provider.getTileDataAvailable( 2 * x, 2 * y,childLevel) ? 1 : 0;
-	        mask |= provider.getTileDataAvailable( 2 * x + 1, 2 * y,childLevel) ? 2 : 0;
-	        mask |= provider.getTileDataAvailable( 2 * x, 2 * y + 1,childLevel) ? 4 : 0;
-	        mask |= provider.getTileDataAvailable( 2 * x + 1, 2 * y + 1,childLevel) ? 8 : 0;
-		return mask;
-	}
-	
-	Cesium.GeoserverTerrainProvider = GeoserverTerrainProvider;
+									}
+									return retour;
+								};
+							}
+
+							provider.getLevelMaximumGeometricError=function(level){
+								return resultat.levelZeroMaximumGeometricError/ (1 << level);
+							};
+
+							provider.requestTileGeometry=function(x, y, level){
+								var retour;
+								if(Cesium.defined(resultat.getHeightmapTerrainDataArray)){
+									retour=resultat.getHeightmapTerrainDataArray(x, y, level);
+								}else if(Cesium.defined(resultat.getHeightmapTerrainDataImage)){
+									retour=resultat.getHeightmapTerrainDataImage(x, y, level);
+								}
+								return retour;
+							}
+
+							Cesium.defineProperties(provider, {
+								tilingScheme : {
+									get : function() {
+										return resultat.tilingScheme ;
+									}
+								},
+								ready : {
+									get : function() {
+										return resultat.ready;
+									}
+								},
+								hasWaterMask : {
+									get : function() {
+										return resultat.waterMask;
+									}
+								},
+								heightMapHeight : {
+									get : function() {
+										return resultat.heightMapHeight;
+									}
+								},
+								heightMapWidth : {
+									get : function() {
+										return resultat.heightMapWidth;
+									}
+								},
+								getTileDataAvailable: {
+									get : function() {
+										return resultat.getTileDataAvailable;
+									}
+								}
+							});
+						}
+					});
+}
+
+function templateToURL(urlParam,x,y,level,provider){
+	var rect= provider.tilingScheme.tileXYToNativeRectangle(x, y,level);
+	var xSpacing = (rect.east - rect.west)/ (provider.heightMapWidth - 1);
+	var ySpacing = (rect.north - rect.south)/ (provider.heightMapHeight - 1);
+	rect.west -= xSpacing * 0.5;
+	rect.east += xSpacing * 0.5;
+	rect.south -= ySpacing * 0.5;
+	rect.north += ySpacing * 0.5;
+
+	var yTiles = provider.tilingScheme.getNumberOfYTilesAtLevel(level);
+	var tmsY = (yTiles - y - 1);
+
+	return urlParam.replace("{south}",rect.south).replace("{north}",rect.north).replace("{west}",rect.west)
+	.replace("{east}",rect.east).replace("{x}",x).replace("{y}",y).replace("{tmsY}",tmsY);
+}
+
+function terrainChildrenMask(x, y, level,provider){
+	var mask=0;
+	var childLevel = level + 1;
+	mask |= provider.getTileDataAvailable( 2 * x, 2 * y,childLevel) ? 1 : 0;
+	mask |= provider.getTileDataAvailable( 2 * x + 1, 2 * y,childLevel) ? 2 : 0;
+	mask |= provider.getTileDataAvailable( 2 * x, 2 * y + 1,childLevel) ? 4 : 0;
+	mask |= provider.getTileDataAvailable( 2 * x + 1, 2 * y + 1,childLevel) ? 8 : 0;
+	return mask;
+}
+
+Cesium.GeoserverTerrainProvider = GeoserverTerrainProvider;
 })();
