@@ -949,6 +949,8 @@
 				elementMultiplier : 256.0,
 				isBigEndian : false}
 			};
+			/*
+				
 			if(hasWaterMask){
 				var waterMask = new Uint8Array(
 					heightBuffer.length);
@@ -958,6 +960,16 @@
 					}
 				}
 				optionsHeihtmapTerrainData.waterMask=waterMask;
+			}
+			*/
+			if(hasWaterMask){
+				var waterMask = new Uint8Array(buffer.length);
+				for(var i = 0; i < buffer.length; i++){
+					if(buffer[i]<=0){
+						waterMask[i] = 255;
+					}
+				}
+				optionsHeihtmapTerrainData.waterMask = waterMask;
 			}
 			return new Cesium.HeightmapTerrainData(optionsHeihtmapTerrainData);
 		};
