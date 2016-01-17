@@ -965,7 +965,6 @@
 		function TerrainParser(promise,provider){
 			Cesium.when(promise,function(resultat){
 				console.log(resultat);
-				provider._readyPromise.resolve(resultat.ready);
 				if(Cesium.defined(resultat)&&(resultat.ready)){
 					resultat.levelZeroMaximumGeometricError = Cesium.TerrainProvider.getEstimatedLevelZeroGeometricErrorForAHeightmap(
 						resultat.tilingScheme.ellipsoid, resultat.heightMapWidth,
@@ -1087,6 +1086,7 @@
 								}
 							});
 						}
+						provider._readyPromise.resolve(resultat.ready);
 					});
 }
 
