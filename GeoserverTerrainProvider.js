@@ -748,7 +748,7 @@
 						template=resourceURL.getAttribute("template").replace("{TileRow}","{y}").replace("{TileCol}","{x}").replace("{Style}",styleName).
 						replace("{TileMatrixSet}",tileMatrixSetLinkName).replace("{layer}",layerName).replace("{infoFormatExtension}",formatImage.extension);
 					}else if(Cesium.defined(urlKVP)){
-						template=urlKVP+"service=WMTS&request=GetTile&version=1.0.0&layer="+layerName+"&style=&"+styleName+"format="+formatImage.format+"&TileMatrixSet="+tileMatrixSetLinkName+"&TileMatrix={TileMatrix}&TileRow={y}&TileCol={x}"
+						template=urlKVP+"service=WMTS&request=GetTile&version=1.0.0&layer="+layerName+"&style="+styleName+"&format="+formatImage.format+"&TileMatrixSet="+tileMatrixSetLinkName+"&TileMatrix={TileMatrix}&TileRow={y}&TileCol={x}"
 					}
 					
 					if(Cesium.defined(template)){
