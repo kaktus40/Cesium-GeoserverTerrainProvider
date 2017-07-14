@@ -1028,7 +1028,7 @@
                                 offset: resultat.offset
                             };
                             var hasChildren = terrainChildrenMask(x, y, level, provider);
-                            var promise = Cesium.throttleRequestByServer(urlArray, Cesium.loadImage);
+                            var promise = Cesium.loadArrayBuffer(url, Cesium.loadImage);
                             if (Cesium.defined(promise)) {
                                 retour = Cesium.when(promise, function(image) {
                                     return GeoserverTerrainProvider.imageToHeightmapTerrainData(image, limitations, {
@@ -1066,7 +1066,7 @@
                             };
                             var hasChildren = terrainChildrenMask(x, y, level, provider);
 
-                            var promise = Cesium.throttleRequestByServer(urlArray, Cesium.loadArrayBuffer);
+                            var promise = Cesium.loadArrayBuffer(urlArray);
                             if (Cesium.defined(promise)) {
                                 retour = Cesium.when(promise,
                                     function(arrayBuffer) {
