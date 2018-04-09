@@ -1,5 +1,8 @@
 (function() {
     var OGCHelper = {};
+    var loadXML=Cesium.loadXML===undefined?Cesium.Resource.fetchXML:Cesium.loadXML;
+    var loadArrayBuffer=Cesium.loadArrayBuffer===undefined?Cesium.Resource.fetchArrayBuffer:Cesium.loadArrayBuffer;
+    var loadImage=Cesium.loadImage===undefined?Cesium.Resource.fetchImage:Cesium.loadImage;
     var intersectionRectangle = function(rectangle0, rectangle1) {
         var west = Math.max(rectangle0.west, rectangle1.west);
         var east = Math.min(rectangle0.east, rectangle1.east);
@@ -192,7 +195,7 @@
             if (Cesium.defined(description.proxy)) {
                 urlGetCapabilities = description.proxy.getURL(urlGetCapabilities);
             }
-            resultat = Cesium.when(Cesium.loadXML(urlGetCapabilities), function(xml) {
+            resultat = Cesium.when(loadXML(urlGetCapabilities), function(xml) {
                 return OGCHelper.WMSParser.getMetaDatafromXML(xml, description);
             });
         } else if (Cesium.defined(description.xml)) {
@@ -441,7 +444,7 @@
         description = Cesium.defaultValue(description,
             Cesium.defaultValue.EMPTY_OBJECT);
         if (Cesium.defined(description.url)) {
-            resultat = Cesium.loadXML(description.url).then(function(xml) {
+            resultat = loadXML(description.url).then(function(xml) {
                 return OGCHelper.TMSParser.parseXML(xml, description);
             });
         } else if (Cesium.defined(description.xml)) {
@@ -469,7 +472,7 @@
                 if (Cesium.defined(description.proxy)) {
                     url = description.proxy.getURL(url);
                 }
-                return Cesium.when(Cesium.loadXML(url), function(xml) {
+                return Cesium.when(loadXML(url), function(xml) {
                     return OGCHelper.TMSParser.getMetaDatafromXML(xml, description);
                 });
             });
@@ -592,7 +595,7 @@
             if (Cesium.defined(description.proxy)) {
                 urlGetCapabilities = description.proxy.getURL(urlGetCapabilities);
             }
-            resultat = Cesium.loadXML(urlGetCapabilities).then(function(xml) {
+            resultat = loadXML(urlGetCapabilities).then(function(xml) {
                 return OGCHelper.WMTSParser.getMetaDatafromXML(xml, description);
             });
         } else if (Cesium.defined(description.xml)) {
@@ -1028,7 +1031,7 @@
                                 offset: resultat.offset
                             };
                             var hasChildren = terrainChildrenMask(x, y, level, provider);
-                            var promise = Cesium.loadImage(urlArray);
+                            var promise = loadImage(urlArray);
                             if (Cesium.defined(promise)) {
                                 retour = Cesium.when(promise, function(image) {
                                     return GeoserverTerrainProvider.imageToHeightmapTerrainData(image, limitations, {
@@ -1066,7 +1069,7 @@
                             };
                             var hasChildren = terrainChildrenMask(x, y, level, provider);
 
-                            var promise = Cesium.loadArrayBuffer(urlArray);
+                            var promise = loadArrayBuffer(urlArray);
                             if (Cesium.defined(promise)) {
                                 retour = Cesium.when(promise,
                                     function(arrayBuffer) {
