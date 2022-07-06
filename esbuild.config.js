@@ -30,6 +30,7 @@ function finishing() {
     writeFileSync('./dist/evaluation/index.js', js);
     js = readFileSync('./dist/plugin/index.js').toString();
     writeFileSync('./dist/evaluation/GeoserverTerrainProvider.js', js);
+    writeFileSync('./dist/GeoserverTerrainProvider.js', js);
 }
 esbuilt.build(
     {
