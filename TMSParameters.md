@@ -12,8 +12,7 @@ var terrainProvider = new Cesium.GeoserverTerrainProvider({
 	        highest: 12000,
 	        lowest: -500,
 	        styleName: "grayToColor",
-	        hasStyledImage: true,
-	        waterMask: true,
+	        hasStyledImage: true
 	        maxLevel: 11
 	    });
 ```
@@ -124,14 +123,6 @@ For the example the workspace in geoserver is "**elevation**", the layer name is
   <td>true if styleName is defined, otherwise it's false</td>
   <td>true</td>
   <td>indicates if image type is styled or converted. see comments of styleName parameter above</td>
-</tr>
-<tr>
-  <td><i>waterMask</i></td>
-  <td>NO</td>
-  <td>Boolean</td>
-  <td>false</td>
-  <td>true</td>
-  <td>Experimental. Indicates if GeoserverTerrainProvider should generate a water mask</td>
 </tr>
 <tr>
   <td><i>maxLevel</i></td>
