@@ -1,0 +1,28 @@
+{
+	"compilerOptions": {
+		"moduleResolution": "node",
+		"lib": [
+			"DOM",
+			"ES2017",
+			"WebWorker"
+		],
+		"sourceMap": true,
+		"target": "es2017",
+		"resolveJsonModule": true,
+		"alwaysStrict": true,
+		"importsNotUsedAsValues": "error",
+		"isolatedModules": true,
+		"esModuleInterop": true,
+		"skipLibCheck": true,
+		"forceConsistentCasingInFileNames": true
+	},
+	"include": [
+		"src/**/*",
+		"src/node_modules/**/*"
+	],
+	"exclude": [
+		"node_modules/**/**",
+		"__sapper__/*",
+		"static/*"
+	]
+}

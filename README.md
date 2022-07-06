@@ -4,7 +4,7 @@ cesium-GeoserverTerrainProvider
 GeoserverTerrainProvider: A terrain provider which works with geoserver providing elevation datas in bil, png, gif and jpeg formats. The png format should be prefered. 
 
 # Cesium version 
-Tested with Cesium 1.6 and geoserver 2.6.2.
+Tested with Cesium 1.95 and geoserver 2.21.
 
 License: Apache 2.0. Free for commercial and non-commercial use. See LICENSE.md.
 
@@ -17,48 +17,60 @@ License: Apache 2.0. Free for commercial and non-commercial use. See LICENSE.md.
 After that, the GeoserverTerrainProvider will determine the capabilities of geoserver (request getCapabilities) and will be ready to provide terrain data.
 
 # Example
-
+```html
     <script src="/path/to/Cesium.js" type="text/javascript"></script>
     <script src="/path/to/GeoserverTerrainProvider.js" type="text/javascript"></script>
     <body>
-	<canvas id="cesiumContainer"></canvas>
-	<script>
-		var canvas = document.getElementById('cesiumContainer');
-		var scene = new Cesium.Scene(canvas);
-		var primitives = scene.primitives;
-		var globe = new Cesium.Globe(Cesium.Ellipsoid.WGS84);
-		scene.globe=globe;
-		
-		var terrainProvider = new Cesium.GeoserverTerrainProvider({
-	        url : "http://localhost:8080/geoserver/elevation/wms",
-	        layerName: "SRTM90",
-	        styleName:"grayToColor",
-	        waterMask:true
-	    });
-	  	globe.terrainProvider = terrainProvider; 
-	  	var hand = new Cesium.ScreenSpaceEventHandler(canvas);
-	  	// return altitude with double click in console.log!!
-    hand.setInputAction(
-                function (movement) {
-                    if(movement.position != null) {
-                        var cartesian = scene.camera.pickEllipsoid(movement.position, ellipsoid);
-                        if (cartesian) {
-                            var cartographic = ellipsoid.cartesianToCartographic(cartesian);
-                            cartographic.height=globe.getHeight(cartographic);
-                            console.log("lat= "+(cartographic.latitude*180/Math.PI)+"°; long="+(cartographic.longitude*180/Math.PI)+"°; altitude="+cartographic.height+" meters")
-                        }
-                    }
-                }, Cesium.ScreenSpaceEventType.LEFT_DOUBLE_CLICK);
-	</script>
-    </body>
-    
+    <div id="cesiumContainer"></div>
+    <script>
+      async function init(){
+        const container = document.getElementById('cesiumContainer');
+        const terrainProvider = await Cesium.GeoserverTerrainProvider({
+              "url": "http://localhost:8080/geoserver",
+              "layerName": "elevation:SRTM90"
+        });
+        const imageryProvider = new Cesium.WebMapServiceImageryProvider({
+          "url": "http://localhost:8080/geoserver/ows",
+          "parameters": {
+                  "format": "image/png",
+                  "transparent": true
+                },
+          "layers": "raster:naturalEarthPyramid",
+          "maximumLevel": 15
+        });
+
+        const options = {
+          imageryProvider: imageryProvider,
+          baseLayerPicker: false,
+          showRenderLoopErrors: true,
+          animation: true,
+          fullscreenButton: false,
+          geocoder: false,
+          homeButton: false,
+          infoBox: false,
+          sceneModePicker: true,
+          selectionIndicator: false,
+          timeline: false,
+          navigationHelpButton: false,
+          navigationInstructionsInitiallyVisible: false,
+          targetFrameRate: 30,
+          terrainExaggeration: 1.0,
+        };
+
+        viewer = new Cesium.Viewer(container, options);
+        viewer.terrainProvider = terrainProvider;
+      }
+      init();
+    </script>
+  </body>
+```
+
 Where
 <ul>
-	<li>"http://localhost:8080/geoserver/elevation/wms" is the url to the "elevation" workspace stored in geoserver (mandatory)	</li>
-	<li>"SRTM90" is the name of the layer in "elevation" workspace (mandatory)	</li>
-	<li>"waterMask" indicates that a water mask will be displayed (optional and experimental)	</li>
-	<li>"styleName" is the name of mySLD.xml imported style in geoserver (optional see chapter below)	</li>
+	<li>"http://localhost:8080/geoserver" is the url of geoserver (mandatory)	</li>
+	<li>"elevation:SRTM90" is the name of the layer in "elevation" workspace (mandatory)	</li>
 </ul>
+
 <img src="images/MountEverestWithGeoserver.jpg" width="400" height="300" />
 
 Display created with bing map imagery provider and geoserverTerrainProvider. This last was configured with SRTM map of 90 meters resolution.
