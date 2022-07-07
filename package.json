@@ -5,7 +5,9 @@
   "main": "dist/GeoserverTerrainProvider.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "node esbuild.config.js --dev",
+    "build": "node esbuild.config.js"
   },
   "repository": {
     "type": "git",
