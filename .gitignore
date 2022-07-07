@@ -1,4 +1,5 @@
 evaluation
+dist/plugin
 # Logs
 logs
 *.log
