@@ -1,9 +1,8 @@
-import { arrayToBuffer, defaultDescription, IDescription, IFormatArray, imageToBuffer, IResult } from './utils';
+import { arrayToBuffer, defaultDescription, type IDescription, type IFormatArray, imageToBuffer, type IResult } from './utils';
 import { generate as tmsParser } from './tmsParser';
 import { generate as wmsParser } from './wmsParser';
 import { generate as wmtsParser } from './wmtsParser';
 import { GeoserverTerrainProvider as provider } from './terrainProvider';
-import type CustomHeightmapTerrainProvider from 'cesium/Source/Core/CustomHeightmapTerrainProvider';
 const C: typeof import('cesium') = (window as any).Cesium;
 
 const { fetchArrayBuffer: loadArrayBuffer, fetchImage: loadImage } = C.Resource;

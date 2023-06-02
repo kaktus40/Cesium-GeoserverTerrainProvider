@@ -10,7 +10,7 @@
 		"target": "es2017",
 		"resolveJsonModule": true,
 		"alwaysStrict": true,
-		"importsNotUsedAsValues": "error",
+		"verbatimModuleSyntax": true,
 		"isolatedModules": true,
 		"esModuleInterop": true,
 		"skipLibCheck": true,

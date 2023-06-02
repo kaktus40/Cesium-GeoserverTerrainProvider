@@ -1,4 +1,4 @@
-import { basicAssignResult, CRS, FormatImage, IDescription, intersectionRectangle, IResult } from "./utils";
+import { basicAssignResult, CRS, FormatImage, type IDescription, intersectionRectangle, type IResult } from "./utils";
 const C: typeof import('cesium') = (window as any).Cesium
 const { fetchXML: loadXML } = C.Resource;
 
