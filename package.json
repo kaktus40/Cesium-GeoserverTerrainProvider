@@ -59,5 +59,8 @@
   "dependencies": {
     "ndarray-ops": "^1.2.2",
     "snappyjs": "^0.7.0"
+  },
+  "engines": {
+    "node": ">=18.18.0"
   }
 }
