@@ -1,4 +1,4 @@
-import type { Credit, Event, HeightmapTerrainData, TerrainData, TerrainProvider, TileAvailability, TilingScheme } from "cesium";
+import type { Credit, Event, HeightmapTerrainData, Request, TerrainData, TerrainProvider, TileAvailability, TilingScheme } from "cesium";
 import type { IResult } from "./utils";
 const C: typeof import('cesium') = (window as any).Cesium
 const { fetchArrayBuffer: loadArrayBuffer, fetchImage: loadImage } = C.Resource;
@@ -43,13 +43,16 @@ export class GeoserverTerrainProvider {
         this.readyPromise = new Promise(r => true);
     }
 
-    requestTileGeometry(x: number, y: number, level: number, request?: Request): Promise<TerrainData> {
+    requestTileGeometry(x: number, y: number, level: number, request?: Request): Promise<TerrainData> | undefined {
         throw new Error("Method not implemented.");
     }
     getLevelMaximumGeometricError(level: number): number {
         throw new Error("Method not implemented.");
     }
     getTileDataAvailable(x: number, y: number, level: number): boolean {
+        throw new Error("Method not implemented.");
+    }
+    loadTileDataAvailability(x: number, y: number, level: number): Promise<void> | undefined {
         throw new Error("Method not implemented.");
     }
 }
