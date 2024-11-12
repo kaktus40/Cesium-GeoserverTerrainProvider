@@ -1,5 +1,6 @@
-evaluation
-dist/plugin
+geoserver
+blobStore
+bak
 # Logs
 logs
 *.log

@@ -1,11 +1,12 @@
-import { arrayToBuffer, defaultDescription, type IDescription, type IFormatArray, imageToBuffer, type IResult } from './utils';
+import { arrayToBuffer, defaultDescription,  imageToBuffer } from './utils';
+import type {IDescription,  IFormatArray,  IResult, Nullable } from './utils';
 import { generate as tmsParser } from './tmsParser';
 import { generate as wmsParser } from './wmsParser';
 import { generate as wmtsParser } from './wmtsParser';
 import { GeoserverTerrainProvider as provider } from './terrainProvider';
-const C: typeof import('cesium') = (window as any).Cesium;
+import { CustomHeightmapTerrainProvider, Resource, TerrainProvider } from 'cesium';
 
-const { fetchArrayBuffer: loadArrayBuffer, fetchImage: loadImage } = C.Resource;
+const { fetchArrayBuffer: loadArrayBuffer, fetchImage: loadImage } = Resource;
 /**
   * parse wms,TMS or WMTS url from an url and a layer. request metadata information on server.
   *
@@ -46,7 +47,7 @@ const { fetchArrayBuffer: loadArrayBuffer, fetchImage: loadImage } = C.Resource;
   *            [description.formatArray] see OGCHelper.FormatArray
   * return a promise of GeoserverTerrainProvider:
   */
-export async function GeoserverTerrainProvider(description: IDescription) {
+export default async function GeoserverTerrainProvider(description: IDescription) {
     description = Object.assign(defaultDescription, description);
     let resultat: Promise<IResult>;
     switch (description.service) {
@@ -60,12 +61,12 @@ export async function GeoserverTerrainProvider(description: IDescription) {
             resultat = wmsParser(description);
     }
     const end = await resultat;
-
+ 
     TerrainParser(end);
     if (description.service === 'WMTS') {
         return new provider(end);
     } else {
-        return new C.CustomHeightmapTerrainProvider({ height: end.heightMapHeight, width: end.heightMapWidth, tilingScheme: end.tilingScheme, callback: end.GeometryCallback });
+        return new CustomHeightmapTerrainProvider({ height: end.heightMapHeight!, width: end.heightMapWidth!, tilingScheme: end.tilingScheme, callback: end.GeometryCallback });
     }
 }
 
@@ -74,68 +75,68 @@ export async function GeoserverTerrainProvider(description: IDescription) {
 
 export function TerrainParser(resultat: IResult) {
 
-    resultat.levelZeroMaximumGeometricError = C.TerrainProvider.getEstimatedLevelZeroGeometricErrorForAHeightmap(
-        resultat.tilingScheme.ellipsoid, resultat.heightMapWidth,
+    resultat.levelZeroMaximumGeometricError = TerrainProvider.getEstimatedLevelZeroGeometricErrorForAHeightmap(
+        resultat.tilingScheme.ellipsoid, resultat.heightMapWidth!,
         resultat.tilingScheme.getNumberOfXTilesAtLevel(0));
     if (resultat.URLtemplateImage) {
         resultat.getBufferImage = async (x, y, level) => {
-            let retour: Int16Array = null;
+            let retour: Nullable<Int16Array> = null;
             if (!isNaN(x + y + level)) {
-                const urlArray = templateToURL(resultat.URLtemplateImage(x, y, level), x, y, level, resultat);
+                const urlArray = templateToURL(resultat.URLtemplateImage!(x, y, level), x, y, level, resultat);
                 const limitations = {
-                    highest: resultat.highest,
-                    lowest: resultat.lowest,
-                    offset: resultat.offset
+                    highest: resultat.highest!,
+                    lowest: resultat.lowest!,
+                    offset: resultat.offset!
                 };
-                let promise = loadImage({ url: urlArray });
+                let promise = loadImage({ url: urlArray })!;
                 retour = await promise.then((image) => imageToBuffer(image as HTMLImageElement, limitations, {
-                    width: resultat.heightMapWidth,
-                    height: resultat.heightMapHeight
-                }, resultat.hasStyledImage))
-                    .catch(() => new Int16Array(resultat.heightMapWidth * resultat.heightMapHeight));
+                    width: resultat.heightMapWidth!,
+                    height: resultat.heightMapHeight!
+                }, resultat.hasStyledImage!))
+                    .catch(() => new Int16Array(resultat.heightMapWidth! * resultat.heightMapHeight!));
             }
-            return retour;
+            return retour!;
         };
     }
 
     if (resultat.URLtemplateArray) {
         resultat.getBufferArray = async (x, y, level) => {
-            let retour: Int16Array | Float32Array = null;
+            let retour: Nullable<Int16Array | Float32Array> = null;
             if (!isNaN(x + y + level)) {
-                const urlArray = templateToURL(resultat.URLtemplateArray(x, y, level), x, y, level, resultat);
+                const urlArray = templateToURL(resultat.URLtemplateArray!(x, y, level), x, y, level, resultat);
                 const limitations = {
-                    highest: resultat.highest,
-                    lowest: resultat.lowest,
-                    offset: resultat.offset
+                    highest: resultat.highest!,
+                    lowest: resultat.lowest!,
+                    offset: resultat.offset!
                 };
 
-                let promise = loadArrayBuffer({ url: urlArray });
+                let promise = loadArrayBuffer({ url: urlArray })!;
                 retour = await promise.then((arrayBuffer) => arrayToBuffer(arrayBuffer, limitations, {
-                    width: resultat.heightMapWidth,
-                    height: resultat.heightMapHeight
+                    width: resultat.heightMapWidth!,
+                    height: resultat.heightMapHeight!
                 }, resultat.formatArray as IFormatArray))
-                    .catch(() => new Int16Array(resultat.heightMapWidth * resultat.heightMapHeight));
+                    .catch(() => new Int16Array(resultat.heightMapWidth! * resultat.heightMapHeight!));
             }
-            return retour;
+            return retour!;
         };
     }
 
 
     resultat.GeometryCallback = async (x: number, y: number, level: number) => {
-        let retour: Int16Array | Float32Array;
+        let retour: Nullable<Int16Array | Float32Array>;
         if (resultat.getBufferArray) {
             retour = await resultat.getBufferArray(x, y, level) as Int16Array | Float32Array;
         } else if (resultat.getBufferImage) {
             retour = await resultat.getBufferImage(x, y, level) as Int16Array | Float32Array;
         }
-        return retour;
+        return retour!;
     }
 }
 
 function templateToURL(urlParam: string, x: number, y: number, level: number, resultat: IResult) {
     const rect = resultat.tilingScheme.tileXYToNativeRectangle(x, y, level);
-    const xSpacing = (rect.east - rect.west) / (resultat.heightMapWidth - 1);
-    const ySpacing = (rect.north - rect.south) / (resultat.heightMapHeight - 1);
+    const xSpacing = (rect.east - rect.west) / (resultat.heightMapWidth! - 1);
+    const ySpacing = (rect.north - rect.south) / (resultat.heightMapHeight! - 1);
     rect.west -= xSpacing * 0.5;
     rect.east += xSpacing * 0.5;
     rect.south -= ySpacing * 0.5;
